@@ -37,8 +37,8 @@ function love.load()
     -- Create renderer
     renderer = Renderer.new(SCREEN_WIDTH, SCREEN_HEIGHT, SCALE, FONT_SCALE)
     
-    -- Initialize scene manager with ECS
-    SceneManager:init(ECS)
+    -- Initialize scene manager with ECS and viewport dimensions
+    SceneManager:init(ECS, SCREEN_WIDTH, SCREEN_HEIGHT)
 
     -- Create scenes
     ExampleScenes.createOverworldScene(SceneManager, ECS)
@@ -69,6 +69,11 @@ end
 function love.draw()
     -- Begin rendering
     renderer:begin()
+    
+    -- Set the camera from the active scene
+    if SceneManager.activeScene then
+        renderer:setCamera(SceneManager.activeScene.camera)
+    end
 
     -- Run all render systems for the current scene
     SceneManager:render(renderer)
@@ -87,12 +92,20 @@ function love.draw()
     love.graphics.setColor(1, 1, 1)
     if SceneManager.activeScene then
         love.graphics.print("Scene: " .. SceneManager.activeScene.name, 10, 5)
+        
+        -- Display camera and world info in debug text
+        local camera = SceneManager.activeScene.camera
+        local world = SceneManager.activeScene.world
+        
+        love.graphics.print(string.format("Camera: %.0f,%.0f", camera.x, camera.y), 10, 25)
+        love.graphics.print(string.format("World: %dx%d", world.width, world.height), 10, 45)
+        
         if Transition.active then
-            love.graphics.print("Transition: " .. Transition.type .. " (Level: " .. Transition.fadeLevel .. ")", 10, 25)
-            love.graphics.print("Input Locked: " .. (Transition.inputLocked and "Yes" or "No"), 10, 45)
+            love.graphics.print("Transition: " .. Transition.type .. " (Level: " .. Transition.fadeLevel .. ")", 10, 65)
+            love.graphics.print("Input Locked: " .. (Transition.inputLocked and "Yes" or "No"), 10, 85)
         else
-            love.graphics.print("Transition: None", 10, 25)
-            love.graphics.print("Input Locked: " .. (Transition.inputLocked and "Yes" or "No"), 10, 45)
+            love.graphics.print("Transition: None", 10, 65)
+            love.graphics.print("Input Locked: " .. (Transition.inputLocked and "Yes" or "No"), 10, 85)
         end
     end
     
@@ -110,6 +123,33 @@ function love.keypressed(key, scancode, isrepeat)
     }
 
     SceneManager:handleEvent(event)
+    
+    -- Camera debug controls (WASD to move camera)
+    if SceneManager.activeScene and not Transition:isInputLocked() then
+        local camera = SceneManager.activeScene.camera
+        local moveAmount = 10
+        
+        if key == "w" then
+            camera:move(0, -moveAmount)
+        elseif key == "s" then
+            camera:move(0, moveAmount)
+        elseif key == "a" then
+            camera:move(-moveAmount, 0)
+        elseif key == "d" then
+            camera:move(moveAmount, 0)
+        elseif key == "c" then
+            -- Center camera on player
+            local playerEntities = ECS:getEntitiesWithComponent("player")
+            if #playerEntities > 0 then
+                local player = playerEntities[1]
+                local transform = player:getComponent("transform")
+                if transform then
+                    camera:centerOn(transform.x, transform.y)
+                    print("Centered camera on player at " .. transform.x .. "," .. transform.y)
+                end
+            end
+        end
+    end
 
     -- Debug scene transitions with number keys
     -- These will still work even if normal input is locked

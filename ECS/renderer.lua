@@ -21,7 +21,8 @@ function Renderer.new(width, height, scale, fontScale)
         fontScale = fontScale or 0.5, -- Font scale factor relative to game scale
         canvas = love.graphics.newCanvas(width, height),
         -- Create a larger text canvas to accommodate scaled positions
-        textCanvas = love.graphics.newCanvas(width / fontScale, height / fontScale)
+        textCanvas = love.graphics.newCanvas(width / fontScale, height / fontScale),
+        camera = nil -- Will be set by the scene manager
     }
     setmetatable(renderer, Renderer)
     
@@ -86,18 +87,41 @@ function Renderer:draw_to_screen()
     love.graphics.draw(self.textCanvas, offsetX, offsetY, 0, textScale, textScale)
 end
 
+-- Set the camera reference for coordinate transformations
+---@param camera table Camera
+function Renderer:setCamera(camera)
+    self.camera = camera
+end
+
+-- Convert world coordinates to screen coordinates
+---@param x number
+---@param y number
+---@return number, number
+function Renderer:worldToScreen(x, y)
+    if self.camera then
+        return x - self.camera.x, y - self.camera.y
+    end
+    return x, y
+end
+
 function Renderer:draw_rectangle(x, y, width, height, colorIndex, filled)
+    -- Convert world coordinates to screen coordinates
+    local screenX, screenY = self:worldToScreen(x, y)
+    
     -- Apply the fade effect to the color index
     local adjustedColorIndex = Transition:getAdjustedColorIndex(colorIndex or 1)
     love.graphics.setColor(self.COLORS[adjustedColorIndex])
     
     -- Use math.floor to ensure we're drawing at exact pixel positions
     local drawMode = filled and "fill" or "line"
-    love.graphics.rectangle(drawMode, math.floor(x), math.floor(y), 
+    love.graphics.rectangle(drawMode, math.floor(screenX), math.floor(screenY), 
                           math.floor(width), math.floor(height))
 end
 
 function Renderer:draw_sprite(sprite, x, y, colorIndex)
+    -- Convert world coordinates to screen coordinates
+    local screenX, screenY = self:worldToScreen(x, y)
+    
     -- Apply the fade effect to the color index
     local adjustedColorIndex = Transition:getAdjustedColorIndex(colorIndex or 1)
     love.graphics.setColor(self.COLORS[adjustedColorIndex])
@@ -110,7 +134,7 @@ function Renderer:draw_sprite(sprite, x, y, colorIndex)
             for sx = 1, #row do
                 if row[sx] == 1 then
                     -- Use math.floor to ensure we're drawing at exact pixel positions
-                    love.graphics.points(math.floor(x + sx - 1), math.floor(y + sy - 1))
+                    love.graphics.points(math.floor(screenX + sx - 1), math.floor(screenY + sy - 1))
                 end
             end
         end
@@ -118,20 +142,32 @@ function Renderer:draw_sprite(sprite, x, y, colorIndex)
 end
 
 function Renderer:draw_text(text, x, y, textColorIndex, shadowColorIndex)
+    -- For text, we have a special case:
+    -- 1. If x and y are numbers, we treat them as world coordinates
+    -- 2. If they're specific strings like "center", we handle special positioning
+    local screenX, screenY
+    
+    if x == "center" then
+        screenX = self.width / 2 - (text:len() * 4) -- Approximate center based on text length
+    else
+        screenX, screenY = self:worldToScreen(x, y)
+    end
+    
+    if y == "center" then
+        screenY = self.height / 2
+    end
+    
     -- Switch to text canvas for drawing
     love.graphics.setCanvas(self.textCanvas)
-    -- transform x and y coordinates to the textCanvas equivalent
-    local tx = x / self.fontScale 
-    local ty = y / self.fontScale
+    -- transform coordinates to the textCanvas equivalent
+    local tx = screenX / self.fontScale 
+    local ty = screenY / self.fontScale
     
     -- Apply the fade effect to the text color index
     local adjustedTextColorIndex = Transition:getAdjustedColorIndex(textColorIndex or 1)
     
     -- Set our pixel font
     love.graphics.setFont(self.pixelFont)
-    
-    -- For the larger canvas, we don't need to scale the position anymore
-    -- since the canvas itself accounts for the scaling
     
     -- Draw shadow if shadowColorIndex is provided
     if shadowColorIndex then

@@ -186,7 +186,6 @@ function ExampleSystems.CreateBattleSystem:run()
         })
 end
 
--- Update System: Movement
 ExampleSystems.MovementSystem = setmetatable({}, {__index = Systems.UpdateSystem})
 ExampleSystems.MovementSystem.__index = ExampleSystems.MovementSystem
 
@@ -197,21 +196,77 @@ function ExampleSystems.MovementSystem.new()
 end
 
 function ExampleSystems.MovementSystem:run(dt)
+    -- Get the active scene to access world bounds
+    local SceneManager = require("ECS.scene_manager").SceneManager
+    local activeScene = SceneManager.activeScene
+    if not activeScene then return end
+    
+    local world = activeScene.world
+    
     -- Get all entities with both transform and velocity components
     local entities = self.ecs:getEntitiesWithComponent("velocity")
 
     for _, entity in ipairs(entities) do
         local transform = entity:getComponent("transform")
         local velocity = entity:getComponent("velocity")
+        local sprite = entity:getComponent("sprite")
 
         if transform and velocity then
+            -- Store previous position for collision resolution
+            local prevX, prevY = transform.x, transform.y
+            
             -- Update position based on velocity
             transform.x = transform.x + velocity.dx * dt
             transform.y = transform.y + velocity.dy * dt
 
-            -- Keep within screen bounds (assuming 160x144 for Gameboy)
-            transform.x = math.max(0, math.min(160, transform.x))
-            transform.y = math.max(0, math.min(144, transform.y))
+            -- Get entity dimensions if it has a sprite
+            local width, height = 1, 1
+            if sprite then
+                width = sprite.width
+                height = sprite.height
+            end
+            
+            -- Keep within world bounds
+            if transform.x < 0 then
+                transform.x = 0
+            elseif transform.x + width > world.width then
+                transform.x = world.width - width
+            end
+            
+            if transform.y < 0 then
+                transform.y = 0
+            elseif transform.y + height > world.height then
+                transform.y = world.height - height
+            end
+            
+            -- Simple collision detection with other entities
+            local collision = entity:getComponent("collision")
+            if collision and collision.solid then
+                local collisionEntities = self.ecs:getEntitiesWithComponent("collision")
+                
+                for _, otherEntity in ipairs(collisionEntities) do
+                    -- Skip self-collision
+                    if otherEntity.id ~= entity.id then
+                        local otherTransform = otherEntity:getComponent("transform")
+                        local otherCollision = otherEntity:getComponent("collision")
+                        
+                        if otherTransform and otherCollision and otherCollision.solid then
+                            -- Simple distance-based collision detection
+                            local dx = transform.x - otherTransform.x
+                            local dy = transform.y - otherTransform.y
+                            local distance = math.sqrt(dx*dx + dy*dy)
+                            local minDistance = collision.radius + otherCollision.radius
+                            
+                            if distance < minDistance then
+                                -- Collision detected, revert position
+                                transform.x = prevX
+                                transform.y = prevY
+                                break
+                            end
+                        end
+                    end
+                end
+            end
         end
     end
 end

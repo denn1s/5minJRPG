@@ -2,15 +2,21 @@
 -- Scene management system for the ECS
 
 local Transition = require("ECS.transition")
+local Camera = require("ECS.camera")
+local World = require("ECS.world")
 
 ---@class SceneState
 ---@field entities table[] Entities in this scene
 ---@field initialized boolean Whether the scene has been initialized
+---@field cameraX number Camera X position
+---@field cameraY number Camera Y position
 
 ---@class Scene
 ---@field name string Name of the scene
 ---@field systems table<string, table> Systems in this scene organized by type
 ---@field initialized boolean Whether the scene has been initialized
+---@field camera Camera Camera for this scene
+---@field world World World for this scene
 
 ---@class SceneManager
 ---@field scenes table<string, Scene> All registered scenes
@@ -33,8 +39,16 @@ local Scene = {}
 Scene.__index = Scene
 
 ---@param name string
+---@param viewportWidth number
+---@param viewportHeight number
+---@param worldWidth? number
+---@param worldHeight? number
 ---@return Scene
-function Scene.new(name)
+function Scene.new(name, viewportWidth, viewportHeight, worldWidth, worldHeight)
+    -- Default world size to viewport size if not provided
+    worldWidth = worldWidth or viewportWidth
+    worldHeight = worldHeight or viewportHeight
+    
     local scene = {
         name = name,
         systems = {
@@ -43,7 +57,9 @@ function Scene.new(name)
             render = {},
             event = {}
         },
-        initialized = false
+        initialized = false,
+        world = World.new(worldWidth, worldHeight),
+        camera = Camera.new(viewportWidth, viewportHeight, worldWidth, worldHeight)
     }
     setmetatable(scene, Scene)
     return scene
@@ -64,9 +80,13 @@ end
 
 -- Initialize the scene manager with an ECS instance
 ---@param ecs table
+---@param viewportWidth number
+---@param viewportHeight number
 ---@return SceneManager
-function SceneManager:init(ecs)
+function SceneManager:init(ecs, viewportWidth, viewportHeight)
     self.ecs = ecs
+    self.viewportWidth = viewportWidth
+    self.viewportHeight = viewportHeight
     
     -- Add the transition system
     local TransitionSystem = require("ECS.systems.transition_system")
@@ -86,7 +106,9 @@ function SceneManager:registerScene(scene)
     self.scenes[scene.name] = scene
     self.sceneStates[scene.name] = {
         entities = {},
-        initialized = false
+        initialized = false,
+        cameraX = 0,
+        cameraY = 0
     }
 
     return self
@@ -94,9 +116,15 @@ end
 
 -- Create a new scene and register it
 ---@param name string
+---@param worldWidth? number
+---@param worldHeight? number
 ---@return Scene
-function SceneManager:createScene(name)
-    local scene = Scene.new(name)
+function SceneManager:createScene(name, worldWidth, worldHeight)
+    -- Default world size to viewport size if not provided
+    worldWidth = worldWidth or self.viewportWidth
+    worldHeight = worldHeight or self.viewportHeight
+    
+    local scene = Scene.new(name, self.viewportWidth, self.viewportHeight, worldWidth, worldHeight)
     self:registerScene(scene)
     return scene
 end
@@ -125,6 +153,10 @@ function SceneManager:saveCurrentSceneState()
     local sceneName = self.activeScene.name
     ---@type SceneState
     local state = self.sceneStates[sceneName]
+
+    -- Store camera position
+    state.cameraX = self.activeScene.camera.x
+    state.cameraY = self.activeScene.camera.y
 
     -- Store all non-persistent entities
     state.entities = {}
@@ -159,6 +191,12 @@ function SceneManager:restoreSceneState(sceneName)
     local state = self.sceneStates[sceneName]
     if not state then return end
 
+    -- Restore camera position
+    local scene = self.scenes[sceneName]
+    if scene then
+        scene.camera:setPosition(state.cameraX, state.cameraY)
+    end
+
     -- Remove all non-persistent entities
     for _, entity in pairs(self.ecs.entities) do
         if not self:isEntityPersistent(entity) then
@@ -177,7 +215,6 @@ function SceneManager:restoreSceneState(sceneName)
     end
 
     -- Set the scene's initialized state
-    local scene = self.scenes[sceneName]
     if scene then
         scene.initialized = state.initialized
     end
