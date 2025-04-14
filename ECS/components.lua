@@ -43,23 +43,52 @@ function Components.velocity(dx, dy)
     }
 end
 
----@class SpriteComponent
----@field name string Always "sprite"
----@field data table Array of pixel data
----@field width number Width of sprite
----@field height number Height of sprite
 
--- Sprite component
----@param data? table
----@param width? number
----@param height? number
+---@class TextureComponent
+---@field name string Always "texture"
+---@field texturePath string Path to the texture, and also the cache index 
+---@field width number Width of a single sprite in the sheet
+---@field height number Height of a single sprite in the sheet
+---@field data table Array of pixel data (loaded from spritesheet)
+---@field loaded boolean Whether the sprite has been loaded
+
+-- Sprite component with spritesheet support
+---@param texturePath string Path to sprite sheet image
 ---@return SpriteComponent
-function Components.sprite(data, width, height)
+function Components.texture(path)
     return {
         name = "sprite",
-        data = data or {},  -- Array of pixel data
-        width = width or 1,
-        height = height or 1
+        path = path,
+        width = 0, -- will be loaded by the texture system
+        height = 0,
+        data = {},
+        loaded = false
+    }
+end
+
+---@class SpriteComponent
+---@field name string Always "sprite"
+---@field texture string Path to sprite sheet image
+---@field width number Width of a single sprite in the sheet
+---@field height number Height of a single sprite in the sheet
+---@field xIndex number Current sprite x-index in the sheet
+---@field yIndex number Current sprite y-index in the sheet
+
+-- Sprite component with spritesheet support
+---@param texture string Path to the texture and its cache index
+---@param width? number Width of a single sprite in pixels
+---@param height? number Height of a single sprite in pixels
+---@param xIndex? number Initial sprite x-index in the sheet to use when rendering
+---@param yIndex? number Initial sprite y-index in the sheet
+---@return SpriteComponent
+function Components.sprite(texture, width, height, xIndex, yIndex)
+    return {
+        name = "sprite",
+        texture = texture,
+        width = width or 16,
+        height = height or 16,
+        xIndex = xIndex or 0,
+        yIndex = yIndex or 0,
     }
 end
 
