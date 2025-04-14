@@ -595,45 +595,16 @@ function ExampleSystems.BattleRenderSystem:run(renderer)
     -- First render sprites
     ExampleSystems.SpriteRenderSystem.new():init(self.ecs):run(renderer)
 
-    -- Get battle UI entity
-    local uiEntities = self.ecs:getEntitiesWithComponent("battleUI")
-    if #uiEntities == 0 then return end
-    local ui = uiEntities[1]:getComponent("battleUI")
-
-    -- Get player entity
-    local playerEntities = self.ecs:getEntitiesWithComponent("player")
-    if #playerEntities == 0 then return end
-    local player = playerEntities[1]:getComponent("player")
-
-    -- Get enemy entity
-    local enemyEntities = self.ecs:getEntitiesWithComponent("enemy")
-    if #enemyEntities == 0 then return end
-    local enemy = enemyEntities[1]:getComponent("enemy")
-
-    -- Draw battle UI
-    -- Message box
+    -- testing text positioning
     renderer:draw_rectangle(5, 10, 150, 20, 1, false)
+    
+    renderer:draw_rectangle(80, 100, 70, 40, 1, false)
 
-    -- Options box
-    if ui.state == "select" then
-        renderer:draw_rectangle(80, 100, 70, 40, 1, false)
-
-        -- Draw options
-        for i, option in ipairs(ui.options) do
-            local highlight = (i == ui.selectedOption) and 1 or 3
-            renderer:draw_shadowed_text(option, 85, 100 + (i-1) * 10, highlight, 4)
-        end
-    end
-
-    -- Health bars
-    -- Player health
-    renderer:draw_shadowed_text("HP: " .. player.health .. "/" .. player.maxHealth, 10, 100, 1, 4)
-
-    -- Enemy health
-    renderer:draw_shadowed_text("Enemy: " .. enemy.health .. "/" .. enemy.maxHealth, 10, 40, 1, 4)
-
-    -- Message
-    renderer:draw_shadowed_text(ui.message, 10, 15, 1, 4)
+    renderer:draw_text("AAA", 0, 0, 1, 3)  -- this text should be in the upper left corner
+    renderer:draw_text("BBB", 0, 4, 1, 3)  -- this should be right below
+    renderer:draw_text("CCC", 80, 100, 1, 3) -- this should be inside the rectangle
+    renderer:draw_text("DDD", 160/2, 144/2, 1, 3)  -- this should be in the middle of the screen
+    renderer:draw_text("FFF", 160, 144, 1, 2)  -- this should not be on the screen
 end
 
 -- Event System: KeyPressed

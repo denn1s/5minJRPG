@@ -12,6 +12,7 @@ local Transition = require("ECS.transition")
 local SCREEN_WIDTH = 160
 local SCREEN_HEIGHT = 144
 local SCALE = 8
+local FONT_SCALE = 0.5
 
 -- Game settings
 local TRANSITION_DURATION = 0.75  -- Default transition duration (in seconds)
@@ -34,7 +35,7 @@ function love.load()
     love.graphics.setLineStyle("rough")
 
     -- Create renderer
-    renderer = Renderer.new(SCREEN_WIDTH, SCREEN_HEIGHT, SCALE)
+    renderer = Renderer.new(SCREEN_WIDTH, SCREEN_HEIGHT, SCALE, FONT_SCALE)
     
     -- Initialize scene manager with ECS
     SceneManager:init(ECS)
