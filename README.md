@@ -96,7 +96,7 @@ The world defines the boundaries and properties of each scene:
 
 ```lua
 -- main.lua
-local ECS = require("ECS.core")
+local ECS = require("ECS.ecs")
 local Renderer = require("ECS.renderer")
 local SceneManager = require("ECS.scene_manager").SceneManager
 local MyScenes = require("my_scenes")

@@ -1,4 +1,4 @@
--- ECS/core.lua
+-- ECS/ecs.lua
 -- Core implementation of Entity Component System
 
 ---@class Entity

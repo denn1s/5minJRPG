@@ -2,7 +2,7 @@
 -- Simple entry point for Love2D game using ECS with scene management
 
 -- Import required modules
-local ECS = require("ECS.core")
+local ECS = require("ECS.ecs")
 local Renderer = require("ECS.renderer")
 local SceneManager = require("ECS.scene_manager").SceneManager
 local ExampleScenes = require("example_scenes")
