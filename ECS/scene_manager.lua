@@ -89,7 +89,7 @@ function SceneManager:init(ecs, viewportWidth, viewportHeight)
     self.viewportHeight = viewportHeight
     
     -- Add the transition system
-    local TransitionSystem = require("ECS.systems.transition_system")
+    local TransitionSystem = require("ECS.core.transition_system")
     self.transitionSystem = TransitionSystem.new():init(ecs, self)
     
     return self

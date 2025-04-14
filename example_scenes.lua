@@ -1,47 +1,48 @@
 -- example_scenes.lua
--- Example scene definitions with fade transitions and camera/world support
---
-local TextureManager = require("ECS.texture_manager")
+-- Simple scene definitions for a basic game example
+
 local ExampleSystems = require("example_systems")
-local SceneInitSystem = require("ECS.systems.scene_init_system")
-local CameraSystem = require("ECS.systems.camera_system")
-local TextureLoadSystem = require("ECS.systems.texture_load_system")
-local SpriteRenderSystem = require("ECS.systems.sprite_render_system")
+local Core = require("ECS.core")
 
 local ExampleScenes = {}
 
 -- Default transition duration
-local DEFAULT_TRANSITION_DURATION = 0.75
+local DEFAULT_TRANSITION_DURATION = 0.5
 
+-- Create a simple overworld scene
 function ExampleScenes.createOverworldScene(sceneManager, ecs)
-    -- Create a scene with a bigger world (320x288 - 2x screen size)
+    -- Create a scene with a medium-sized world (320x288)
     local scene = sceneManager:createScene("overworld", 320, 288)
-    
-    -- Initialize the texture manager globally
-    -- This happens once in your application, not per scene
-    TextureManager.init(nil, true) -- nil for default color map, true for debug mode
-    
-    -- Add systems in the correct order
-    -- Setup systems
-    scene:addSystem("setup", SceneInitSystem.new():init(ecs, true, DEFAULT_TRANSITION_DURATION))
-    
-    -- First: Create entities with texture components
-    scene:addSystem("setup", ExampleSystems.PlayerSetupSystem.new():init(ecs))
-    scene:addSystem("setup", ExampleSystems.CreateOverworldSystem.new():init(ecs))
-    
-    -- Second: Load all textures referenced by any entity
-    scene:addSystem("setup", TextureLoadSystem.new():init(ecs))
 
-    -- Update systems
+    -- Add setup systems
+    -- First initialize the scene with a fade-in effect
+    scene:addSystem("setup", Core.SceneInitSystem.new():init(ecs, true, DEFAULT_TRANSITION_DURATION))
+    
+    -- Create the player entity
+    scene:addSystem("setup", ExampleSystems.CreatePlayerSystem.new():init(ecs))
+    
+    -- Create world objects (trees, rocks, etc.)
+    scene:addSystem("setup", ExampleSystems.CreateWorldSystem.new():init(ecs))
+    
+    -- Load all textures for entities in the scene
+    scene:addSystem("setup", Core.TextureLoadSystem.new():init(ecs))
+
+    -- Add update systems
+    -- Handle player input
     scene:addSystem("update", ExampleSystems.InputSystem.new():init(ecs))
+    
+    -- Update position and handle collisions
     scene:addSystem("update", ExampleSystems.MovementSystem.new():init(ecs))
-    scene:addSystem("update", ExampleSystems.OverworldInteractionSystem.new():init(ecs))
-    scene:addSystem("update", CameraSystem.new():init(ecs, scene.camera, "follow"))
+    
+    -- Make the camera follow the player
+    scene:addSystem("update", Core.CameraSystem.new():init(ecs, scene.camera, "follow"))
 
-    -- Render systems - the sprite render system now uses the global texture manager
-    scene:addSystem("render", SpriteRenderSystem.new():init(ecs))
+    -- Add render systems
+    -- Use our dedicated SpriteRenderSystem from the systems index
+    scene:addSystem("render", Core.SpriteRenderSystem.new():init(ecs))
 
-    -- Event systems
+    -- Add event systems
+    -- Handle key presses
     scene:addSystem("event", ExampleSystems.KeyPressSystem.new():init(ecs))
 
     -- Set initial camera position (center of the world)
@@ -49,73 +50,9 @@ function ExampleScenes.createOverworldScene(sceneManager, ecs)
     
     -- Set world properties
     scene.world:setProperty("type", "overworld")
-    scene.world:setProperty("encounterRate", 0.1)
-
-    return scene
-end
-
--- Create a house scene
-function ExampleScenes.createHouseScene(sceneManager, ecs)
-    -- House scene is exactly one screen in size
-    local scene = sceneManager:createScene("house")
-
-    -- Add systems
-    -- Setup systems
-    scene:addSystem("setup", SceneInitSystem.new():init(ecs, true, DEFAULT_TRANSITION_DURATION))
-    scene:addSystem("setup", ExampleSystems.CreateHouseSystem.new():init(ecs))
-
-    -- Update systems
-    scene:addSystem("update", ExampleSystems.InputSystem.new():init(ecs))
-    scene:addSystem("update", ExampleSystems.MovementSystem.new():init(ecs))
-    scene:addSystem("update", ExampleSystems.HouseInteractionSystem.new():init(ecs))
-    -- Add camera system (fixed in the house - world is same size as viewport)
-    scene:addSystem("update", CameraSystem.new():init(ecs, scene.camera, "fixed"))
-
-    -- Render systems
-    scene:addSystem("render", ExampleSystems.SpriteRenderSystem.new():init(ecs))
-
-    -- Event systems
-    scene:addSystem("event", ExampleSystems.KeyPressSystem.new():init(ecs))
-
-    -- Set initial camera position (top-left)
-    scene.camera:setPosition(0, 0)
-
-    -- Set world properties
-    scene.world:setProperty("type", "house")
-    scene.world:setProperty("interior", true)
-
-    return scene
-end
-
--- Create a battle scene
-function ExampleScenes.createBattleScene(sceneManager, ecs)
-    -- Battle scene is exactly one screen in size
-    local scene = sceneManager:createScene("battle")
-
-    -- Add systems
-    -- Setup systems
-    scene:addSystem("setup", SceneInitSystem.new():init(ecs, true, DEFAULT_TRANSITION_DURATION))
-    scene:addSystem("setup", ExampleSystems.CreateBattleSystem.new():init(ecs))
-
-    -- Update systems
-    scene:addSystem("update", ExampleSystems.BattleInputSystem.new():init(ecs))
-    scene:addSystem("update", ExampleSystems.BattleLogicSystem.new():init(ecs))
-    -- Add camera system (fixed for battle - no scrolling)
-    scene:addSystem("update", CameraSystem.new():init(ecs, scene.camera, "fixed"))
-
-    -- Render systems
-    scene:addSystem("render", ExampleSystems.BattleRenderSystem.new():init(ecs))
-
-    -- Event systems
-    scene:addSystem("event", ExampleSystems.KeyPressSystem.new():init(ecs))
-
-    -- Set initial camera position (top-left)
-    scene.camera:setPosition(0, 0)
-
-    -- Set world properties
-    scene.world:setProperty("type", "battle")
-    scene.world:setProperty("background", "grass")
-
+    
+    print("Created overworld scene")
+    
     return scene
 end
 
