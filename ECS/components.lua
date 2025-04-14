@@ -54,10 +54,10 @@ end
 
 -- Sprite component with spritesheet support
 ---@param texturePath string Path to sprite sheet image
----@return SpriteComponent
+---@return TextureComponent
 function Components.texture(path)
     return {
-        name = "sprite",
+        name = "texture",
         path = path,
         width = 0, -- will be loaded by the texture system
         height = 0,
@@ -75,16 +75,16 @@ end
 ---@field yIndex number Current sprite y-index in the sheet
 
 -- Sprite component with spritesheet support
----@param texture string Path to the texture and its cache index
+---@param texturePath string Path to the texture and its cache index
 ---@param width? number Width of a single sprite in pixels
 ---@param height? number Height of a single sprite in pixels
 ---@param xIndex? number Initial sprite x-index in the sheet to use when rendering
 ---@param yIndex? number Initial sprite y-index in the sheet
 ---@return SpriteComponent
-function Components.sprite(texture, width, height, xIndex, yIndex)
+function Components.sprite(texturePath, width, height, xIndex, yIndex)
     return {
         name = "sprite",
-        texture = texture,
+        texturePath = texturePath,
         width = width or 16,
         height = height or 16,
         xIndex = xIndex or 0,

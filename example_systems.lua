@@ -2,6 +2,7 @@
 -- Example systems for the ECS
 
 local Systems = require("ECS.systems")
+local Components = require("ECS.components")
 
 local ExampleSystems = {}
 
@@ -18,19 +19,10 @@ end
 function ExampleSystems.CreatePlayerSystem:run()
     local Components = require("ECS.components")
 
-    -- Create a player entity
-    local playerSprite = {
-        {0,1,1,0},
-        {1,1,1,1},
-        {1,1,1,1},
-        {0,1,1,0}
-    }
-
     -- Create player entity and store reference
     local player = self.ecs:createEntity()
         :addComponent(Components.transform(80, 72))  -- Middle of the screen
         :addComponent(Components.velocity(0, 0))
-        :addComponent(Components.sprite(playerSprite, 4, 4))
         :addComponent(Components.input())
         :addComponent(Components.collision(2))
 
@@ -61,18 +53,8 @@ end
 function ExampleSystems.CreateOverworldSystem:run()
     local Components = require("ECS.components")
 
-    -- Create house entrance
-    local houseSprite = {
-        {1,1,1,1,1,1},
-        {1,0,0,0,0,1},
-        {1,0,0,0,0,1},
-        {1,0,0,0,0,1},
-        {1,1,1,0,1,1}
-    }
-
     self.ecs:createEntity()
         :addComponent(Components.transform(120, 50))
-        :addComponent(Components.sprite(houseSprite, 6, 5))
         :addComponent(Components.collision(3))
         :addComponent({
             name = "portal",
@@ -107,15 +89,8 @@ function ExampleSystems.CreateHouseSystem:run()
     local Components = require("ECS.components")
 
     -- Create exit door
-    local doorSprite = {
-        {1,1},
-        {1,1},
-        {1,1}
-    }
-
     self.ecs:createEntity()
         :addComponent(Components.transform(80, 120))
-        :addComponent(Components.sprite(doorSprite, 2, 3))
         :addComponent(Components.collision(2))
         :addComponent({
             name = "portal",
@@ -125,16 +100,8 @@ function ExampleSystems.CreateHouseSystem:run()
         })
 
     -- Create table
-    local tableSprite = {
-        {1,1,1,1},
-        {0,1,1,0},
-        {0,1,1,0},
-        {0,1,1,0}
-    }
-
     self.ecs:createEntity()
         :addComponent(Components.transform(60, 50))
-        :addComponent(Components.sprite(tableSprite, 4, 4))
         :addComponent(Components.collision(2))
         :addComponent({
             name = "interactable",
@@ -156,16 +123,8 @@ function ExampleSystems.CreateBattleSystem:run()
     local Components = require("ECS.components")
 
     -- Create enemy
-    local enemySprite = {
-        {0,1,1,0},
-        {1,0,0,1},
-        {1,1,1,1},
-        {0,1,1,0}
-    }
-
     self.ecs:createEntity()
         :addComponent(Components.transform(80, 40))
-        :addComponent(Components.sprite(enemySprite, 4, 4))
         :addComponent({
             name = "enemy",
             health = 50,
@@ -200,9 +159,9 @@ function ExampleSystems.MovementSystem:run(dt)
     local SceneManager = require("ECS.scene_manager").SceneManager
     local activeScene = SceneManager.activeScene
     if not activeScene then return end
-    
+
     local world = activeScene.world
-    
+
     -- Get all entities with both transform and velocity components
     local entities = self.ecs:getEntitiesWithComponent("velocity")
 
@@ -214,7 +173,7 @@ function ExampleSystems.MovementSystem:run(dt)
         if transform and velocity then
             -- Store previous position for collision resolution
             local prevX, prevY = transform.x, transform.y
-            
+
             -- Update position based on velocity
             transform.x = transform.x + velocity.dx * dt
             transform.y = transform.y + velocity.dy * dt
@@ -225,38 +184,38 @@ function ExampleSystems.MovementSystem:run(dt)
                 width = sprite.width
                 height = sprite.height
             end
-            
+
             -- Keep within world bounds
             if transform.x < 0 then
                 transform.x = 0
             elseif transform.x + width > world.width then
                 transform.x = world.width - width
             end
-            
+
             if transform.y < 0 then
                 transform.y = 0
             elseif transform.y + height > world.height then
                 transform.y = world.height - height
             end
-            
+
             -- Simple collision detection with other entities
             local collision = entity:getComponent("collision")
             if collision and collision.solid then
                 local collisionEntities = self.ecs:getEntitiesWithComponent("collision")
-                
+
                 for _, otherEntity in ipairs(collisionEntities) do
                     -- Skip self-collision
                     if otherEntity.id ~= entity.id then
                         local otherTransform = otherEntity:getComponent("transform")
                         local otherCollision = otherEntity:getComponent("collision")
-                        
+
                         if otherTransform and otherCollision and otherCollision.solid then
                             -- Simple distance-based collision detection
                             local dx = transform.x - otherTransform.x
                             local dy = transform.y - otherTransform.y
                             local distance = math.sqrt(dx*dx + dy*dy)
                             local minDistance = collision.radius + otherCollision.radius
-                            
+
                             if distance < minDistance then
                                 -- Collision detected, revert position
                                 transform.x = prevX
@@ -284,10 +243,10 @@ end
 function ExampleSystems.InputSystem:run(dt)
     -- Get the transition state to check if input is locked
     local Transition = require("ECS.transition")
-    
+
     -- If input is locked during transition, don't process input
     if Transition:isInputLocked() then return end
-    
+
     -- Get all entities with input component
     local entities = self.ecs:getEntitiesWithComponent("input")
 
@@ -331,7 +290,7 @@ end
 function ExampleSystems.OverworldInteractionSystem:run(dt)
     local SceneManager = require("ECS.scene_manager").SceneManager
     local Transition = require("ECS.transition")
-    
+
     -- If a transition is in progress, don't process interactions
     if Transition:isInputLocked() then return end
 
@@ -408,10 +367,10 @@ end
 
 function ExampleSystems.HouseInteractionSystem:run(dt)
     local Transition = require("ECS.transition")
-    
+
     -- If a transition is in progress, don't process interactions
     if Transition:isInputLocked() then return end
-    
+
     -- Get player entity
     local playerEntities = self.ecs:getEntitiesWithComponent("player")
     if #playerEntities == 0 then return end
@@ -435,7 +394,7 @@ function ExampleSystems.HouseInteractionSystem:run(dt)
             -- Update player position for the new scene
             playerTransform.x = portal.enterX
             playerTransform.y = portal.enterY
-            
+
             -- Transition to the new scene with fade
             local SceneManager = require("ECS.scene_manager").SceneManager
             SceneManager:transitionToSceneWithFade(portal.targetScene, true)
@@ -652,7 +611,7 @@ function ExampleSystems.BattleRenderSystem:run(renderer)
 
     -- testing text positioning
     renderer:draw_rectangle(5, 10, 150, 20, 1, false)
-    
+
     renderer:draw_rectangle(80, 100, 70, 40, 1, false)
 
     renderer:draw_text("AAA", 0, 0, 1, 3)  -- this text should be in the upper left corner
@@ -684,6 +643,90 @@ function ExampleSystems.KeyPressSystem:run(event)
     end
 
     -- You could also handle other key events for entities with input components
+end
+
+
+
+-- Event System: KeyPressed
+ExampleSystems.PlayerSetupSystem = setmetatable({}, {__index = Systems.SetupSystem})
+ExampleSystems.PlayerSetupSystem.__index = ExampleSystems.PlayerSetupSystem
+
+function ExampleSystems.PlayerSetupSystem.new()
+    local system = Systems.SetupSystem.new()
+    setmetatable(system, ExampleSystems.PlayerSetupSystem)
+    return system
+end
+
+function ExampleSystems.PlayerSetupSystem:init(ecs, textureSystem)
+    Systems.SetupSystem.init(self, ecs)
+    self.textureSystem = textureSystem
+    return self
+end
+
+function ExampleSystems.PlayerSetupSystem:run()
+        -- Path to the player spritesheet
+    local heroSpritesheetPath = "assets/spritesheets/hero.png"
+    
+    -- Create player entity
+    local player = self.ecs:createEntity()
+    
+    -- Print current entity id for debugging
+    print("Creating player with entity ID: " .. player.id)
+    
+    -- Add a texture component - TextureLoadSystem will handle loading it
+    -- Make sure this component has name="texture" in its implementation
+    player:addComponent(Components.texture(heroSpritesheetPath))
+    
+    -- Log the component to make sure it's what we expect
+    local textureComp = player:getComponent("texture")
+    if textureComp then
+        print("Added texture component with path: " .. textureComp.path)
+    else
+        print("ERROR: Failed to add texture component!")
+    end
+    
+    -- Add a sprite component to define which part of the texture to render
+    -- Make sure the texture field is a string that matches the path
+    player:addComponent(Components.sprite(heroSpritesheetPath, 16, 16, 0, 0))
+    
+    -- Log the sprite component
+    local spriteComp = player:getComponent("sprite")
+    if spriteComp then
+        print("Added sprite component with texturePath: " .. (spriteComp.texturePath or "nil"))
+    else
+        print("ERROR: Failed to add sprite component!")
+    end
+    
+    -- Add other necessary components
+    player:addComponent(Components.transform(80, 72))  -- Start in middle of screen
+    player:addComponent(Components.velocity(0, 0))
+    player:addComponent(Components.input())
+    player:addComponent(Components.collision(6))  -- Smaller collision radius than sprite size
+    
+    -- Add player-specific component
+    player:addComponent({
+        name = "player",
+        health = 100,
+        maxHealth = 100,
+        experience = 0,
+        level = 1
+    })
+    
+    -- Mark player as persistent across scenes
+    local SceneManager = require("ECS.scene_manager").SceneManager
+    SceneManager:markEntityAsPersistent(player)
+    
+    -- Check if entity has the expected components
+    print("Checking components on player entity...")
+    local components = {}
+    for name, _ in pairs(player.components) do
+        table.insert(components, name)
+    end
+    print("Player components: " .. table.concat(components, ", "))
+    
+    print("Created player entity with reference to texture: " .. heroSpritesheetPath)
+    
+    return player
 end
 
 return ExampleSystems

@@ -1,36 +1,45 @@
 -- example_scenes.lua
 -- Example scene definitions with fade transitions and camera/world support
-
+--
+local TextureManager = require("ECS.texture_manager")
 local ExampleSystems = require("example_systems")
-local Components = require("ECS.components")
 local SceneInitSystem = require("ECS.systems.scene_init_system")
 local CameraSystem = require("ECS.systems.camera_system")
+local TextureLoadSystem = require("ECS.systems.texture_load_system")
+local SpriteRenderSystem = require("ECS.systems.sprite_render_system")
 
 local ExampleScenes = {}
 
 -- Default transition duration
 local DEFAULT_TRANSITION_DURATION = 0.75
 
--- Create an overworld scene
 function ExampleScenes.createOverworldScene(sceneManager, ecs)
     -- Create a scene with a bigger world (320x288 - 2x screen size)
     local scene = sceneManager:createScene("overworld", 320, 288)
-
-    -- Add systems
+    
+    -- Initialize the texture manager globally
+    -- This happens once in your application, not per scene
+    TextureManager.init(nil, true) -- nil for default color map, true for debug mode
+    
+    -- Add systems in the correct order
     -- Setup systems
     scene:addSystem("setup", SceneInitSystem.new():init(ecs, true, DEFAULT_TRANSITION_DURATION))
-    scene:addSystem("setup", ExampleSystems.CreatePlayerSystem.new():init(ecs))
+    
+    -- First: Create entities with texture components
+    scene:addSystem("setup", ExampleSystems.PlayerSetupSystem.new():init(ecs))
     scene:addSystem("setup", ExampleSystems.CreateOverworldSystem.new():init(ecs))
+    
+    -- Second: Load all textures referenced by any entity
+    scene:addSystem("setup", TextureLoadSystem.new():init(ecs))
 
     -- Update systems
     scene:addSystem("update", ExampleSystems.InputSystem.new():init(ecs))
     scene:addSystem("update", ExampleSystems.MovementSystem.new():init(ecs))
     scene:addSystem("update", ExampleSystems.OverworldInteractionSystem.new():init(ecs))
-    -- Add camera follow system to follow the player
     scene:addSystem("update", CameraSystem.new():init(ecs, scene.camera, "follow"))
 
-    -- Render systems
-    scene:addSystem("render", ExampleSystems.SpriteRenderSystem.new():init(ecs))
+    -- Render systems - the sprite render system now uses the global texture manager
+    scene:addSystem("render", SpriteRenderSystem.new():init(ecs))
 
     -- Event systems
     scene:addSystem("event", ExampleSystems.KeyPressSystem.new():init(ecs))
