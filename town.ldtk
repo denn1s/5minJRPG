@@ -319,14 +319,14 @@
 			}
 		},
 		{
-			"__cWid": 11,
-			"__cHei": 2,
+			"__cWid": 3,
+			"__cHei": 4,
 			"identifier": "Hero",
 			"uid": 16,
 			"relPath": "assets/hero.aseprite",
 			"embedAtlas": null,
-			"pxWid": 168,
-			"pxHei": 17,
+			"pxWid": 48,
+			"pxHei": 64,
 			"tileGridSize": 16,
 			"spacing": 0,
 			"padding": 0,
@@ -335,10 +335,7 @@
 			"enumTags": [],
 			"customData": [],
 			"savedSelections": [],
-			"cachedPixelData": {
-				"opaqueTiles": "0000000000111111111111",
-				"averageColors": "a688b688a6889566b56795668577857785778577000000000000000000000000000000000000000000000000"
-			}
+			"cachedPixelData": { "opaqueTiles": "000000000000", "averageColors": "b688a688a688b56795669566857785770000857785770000" }
 		}
 	], "enums": [{ "identifier": "ZINDEX", "uid": 8, "values": [{ "id": "ZINDEX10", "tileRect": null, "color": 12470831 }], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }], "externalEnums": [], "levelFields": [] },
 	"levels": [
@@ -379,7 +376,7 @@
 					"layerDefUid": 7,
 					"pxOffsetX": 0,
 					"pxOffsetY": 0,
-					"visible": true,
+					"visible": false,
 					"optionalRules": [],
 					"intGridCsv": [
 						0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,
@@ -2338,7 +2335,7 @@
 					"layerDefUid": 7,
 					"pxOffsetX": 0,
 					"pxOffsetY": 0,
-					"visible": true,
+					"visible": false,
 					"optionalRules": [],
 					"intGridCsv": [
 						0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -3492,7 +3489,7 @@
 					"layerDefUid": 7,
 					"pxOffsetX": 0,
 					"pxOffsetY": 0,
-					"visible": true,
+					"visible": false,
 					"optionalRules": [],
 					"intGridCsv": [
 						0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

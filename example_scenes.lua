@@ -31,6 +31,9 @@ function ExampleScenes.createOverworldScene(sceneManager, ecs)
     -- Handle player input
     scene:addSystem("update", ExampleSystems.InputSystem.new():init(ecs))
     
+    -- Handle player animations (add before movement system for better synchronization)
+    scene:addSystem("update", Core.PlayerAnimationSystem.new():init(ecs))
+    
     -- Update position and handle collisions
     scene:addSystem("update", ExampleSystems.MovementSystem.new():init(ecs))
     
