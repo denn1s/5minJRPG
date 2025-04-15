@@ -10,6 +10,7 @@ Core.SpriteRenderSystem = require("ECS.core.sprite_render_system")
 Core.TextureLoadSystem = require("ECS.core.texture_load_system")
 Core.TransitionSystem = require("ECS.core.transition_system")
 Core.PlayerAnimationSystem = require("ECS.core.player_animation_system")
+Core.ColliderRenderSystem = require("ECS.core.collider_render_system")
 
 -- Return the collected systems
 return Core

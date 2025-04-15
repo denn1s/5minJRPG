@@ -21,6 +21,7 @@ function ExampleSystems.CreatePlayerSystem:init(ecs)
     return self
 end
 
+
 function ExampleSystems.CreatePlayerSystem:run()
     -- Path to the player spritesheet
     local heroSpritesheetPath = "assets/spritesheets/hero.png"
@@ -43,8 +44,10 @@ function ExampleSystems.CreatePlayerSystem:run()
     -- Add input component for player control
     player:addComponent(Components.input())
 
-    -- Add collision component
-    player:addComponent(Components.collision(6))
+    -- Add a smaller collider component with offset
+    -- Width: 16px (same as sprite width)
+    -- Height: if you want 8px at the bottom of the 16px sprite, it's 8px high with an 8px Y offset
+    player:addComponent(Components.collider(16, 8, 0, 8, true))  -- true enables debug rendering
 
     -- Add player-specific component with stats
     player:addComponent({

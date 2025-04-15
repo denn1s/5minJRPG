@@ -119,19 +119,29 @@ function Components.input(keyMap)
     }
 end
 
----@class CollisionComponent
----@field name string Always "collision"
----@field radius number Collision radius
----@field solid boolean Whether the entity is solid
+---@class ColliderComponent
+---@field name string Always "collider"
+---@field width number Width of the collider in pixels
+---@field height number Height of the collider in pixels
+---@field offsetX number X offset from the entity's transform position
+---@field offsetY number Y offset from the entity's transform position
+---@field debug boolean Whether to render this collider for debugging
 
--- Collision component
----@param radius? number
----@return CollisionComponent
-function Components.collision(radius)
+-- Collider component for physics and interaction detection
+---@param width? number Width of the collider
+---@param height? number Height of the collider
+---@param offsetX? number X offset from entity position
+---@param offsetY? number Y offset from entity position
+---@param debug? boolean Whether to render the collider for debugging
+---@return ColliderComponent
+function Components.collider(width, height, offsetX, offsetY, debug)
     return {
-        name = "collision",
-        radius = radius or 1,
-        solid = true
+        name = "collider",
+        width = width or 16,
+        height = height or 16,
+        offsetX = offsetX or 0,
+        offsetY = offsetY or 0,
+        debug = debug or false
     }
 end
 
