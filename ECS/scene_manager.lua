@@ -266,6 +266,11 @@ function SceneManager:transitionToScene(sceneName, preserveCurrentScene)
         self:runSetupSystems()
         self.activeScene.initialized = true
     end
+    
+    -- Call the onActivated callback if it exists
+    if self.activeScene.onActivated then
+        self.activeScene:onActivated()
+    end
 
     return self
 end

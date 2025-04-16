@@ -6,6 +6,7 @@ local ECS = require("ECS.ecs")
 local Renderer = require("ECS.renderer")
 local SceneManager = require("ECS.scene_manager").SceneManager
 local ExampleScenes = require("example_scenes")
+local ExampleLDtkScene = require("example_ldtk_scene")
 local TextureManager = require("ECS.texture_manager")
 local Transition = require("ECS.transition")
 
@@ -44,12 +45,15 @@ function love.load()
 
     -- Create scenes
     ExampleScenes.createOverworldScene(SceneManager, ECS)
+    
+    -- Create our LDtk scene
+    ExampleLDtkScene.createLDtkScene(SceneManager, ECS)
 
     -- Set default transition duration
     Transition.duration = TRANSITION_DURATION
     
-    -- Start with the overworld scene
-    SceneManager:transitionToScene("overworld")
+    -- Start with the LDtk scene
+    SceneManager:transitionToScene("ldtk_scene")
     Transition:start("fade_in", nil, false, TRANSITION_DURATION)
     
     print("Game initialized with screen size: " .. SCREEN_WIDTH .. "x" .. SCREEN_HEIGHT)
@@ -101,6 +105,46 @@ function love.keypressed(key, scancode, isrepeat)
     if key == "f12" then
         print("Texture cache statistics:")
         TextureManager.printCacheStats()
+    elseif key == "f11" then
+        -- Toggle debug information display
+        if SceneManager.activeScene then
+            for _, system in ipairs(SceneManager.activeScene.systems.render) do
+                if system.__index == require("ECS.core.debug_system").__index then
+                    system:toggleDebugInfo()
+                    break
+                end
+            end
+        end
+    elseif key == "f1" or key == "f2" or key == "f3" then
+        -- Level switching for testing
+        local levelId = nil
+        if key == "f1" then
+            levelId = "Level_0"  -- Overworld/town
+        elseif key == "f2" then
+            levelId = "Level_1"  -- House interior
+        elseif key == "f3" then
+            levelId = "Level_2"  -- Dungeon
+        end
+        
+        if levelId and SceneManager.activeScene and SceneManager.activeScene.name == "ldtk_scene" then
+            -- Find the LDtk load system
+            for _, system in ipairs(SceneManager.activeScene.systems.setup) do
+                if system.__index == require("ECS.ldtk.ldtk_system").__index then
+                    -- Load the new level
+                    print("Switching to level: " .. levelId)
+                    system:loadLevel(levelId, 10, 10)  -- Default player position in new level
+                    
+                    -- Update the tilemap render system
+                    for _, renderSystem in ipairs(SceneManager.activeScene.systems.render) do
+                        if renderSystem.__index == require("ECS.ldtk.ldtk_tilemap_render_system").__index then
+                            renderSystem:setLevel(levelId)
+                            break
+                        end
+                    end
+                    break
+                end
+            end
+        end
     end
 end
 

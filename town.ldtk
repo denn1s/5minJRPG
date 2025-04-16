@@ -588,7 +588,7 @@
 									"params": ["Level_1"]
 								}] },
 								{ "__identifier": "x", "__type": "Int", "__value": 72, "__tile": null, "defUid": 22, "realEditorValues": [{ "id": "V_Int", "params": [72] }] },
-								{ "__identifier": "y", "__type": "Int", "__value": 15, "__tile": null, "defUid": 23, "realEditorValues": [{ "id": "V_Int", "params": [15] }] }
+								{ "__identifier": "y", "__type": "Int", "__value": 14, "__tile": null, "defUid": 23, "realEditorValues": [{ "id": "V_Int", "params": [14] }] }
 							],
 							"__worldX": 32,
 							"__worldY": -80
@@ -611,7 +611,7 @@
 									"params": ["Level_1"]
 								}] },
 								{ "__identifier": "x", "__type": "Int", "__value": 69, "__tile": null, "defUid": 22, "realEditorValues": [{ "id": "V_Int", "params": [69] }] },
-								{ "__identifier": "y", "__type": "Int", "__value": 37, "__tile": null, "defUid": 23, "realEditorValues": [{ "id": "V_Int", "params": [37] }] }
+								{ "__identifier": "y", "__type": "Int", "__value": 36, "__tile": null, "defUid": 23, "realEditorValues": [{ "id": "V_Int", "params": [36] }] }
 							],
 							"__worldX": 104,
 							"__worldY": -32
@@ -634,7 +634,7 @@
 									"params": ["Level_1"]
 								}] },
 								{ "__identifier": "x", "__type": "Int", "__value": 42, "__tile": null, "defUid": 22, "realEditorValues": [{ "id": "V_Int", "params": [42] }] },
-								{ "__identifier": "y", "__type": "Int", "__value": 15, "__tile": null, "defUid": 23, "realEditorValues": [{ "id": "V_Int", "params": [15] }] }
+								{ "__identifier": "y", "__type": "Int", "__value": 14, "__tile": null, "defUid": 23, "realEditorValues": [{ "id": "V_Int", "params": [14] }] }
 							],
 							"__worldX": -48,
 							"__worldY": -80
@@ -657,7 +657,7 @@
 									"params": ["Level_1"]
 								}] },
 								{ "__identifier": "x", "__type": "Int", "__value": 7, "__tile": null, "defUid": 22, "realEditorValues": [{ "id": "V_Int", "params": [7] }] },
-								{ "__identifier": "y", "__type": "Int", "__value": 14, "__tile": null, "defUid": 23, "realEditorValues": [{ "id": "V_Int", "params": [14] }] }
+								{ "__identifier": "y", "__type": "Int", "__value": 13, "__tile": null, "defUid": 23, "realEditorValues": [{ "id": "V_Int", "params": [13] }] }
 							],
 							"__worldX": -136,
 							"__worldY": -80
@@ -684,6 +684,26 @@
 							],
 							"__worldX": -88,
 							"__worldY": 64
+						},
+						{
+							"__identifier": "Door",
+							"__grid": [5,11],
+							"__pivot": [0,0],
+							"__tags": ["door"],
+							"__tile": null,
+							"__smartColor": "#BE4A2F",
+							"iid": "487151d0-1030-11f0-bcaf-7b80bed9a600",
+							"width": 16,
+							"height": 8,
+							"defUid": 18,
+							"px": [40,88],
+							"fieldInstances": [
+								{ "__identifier": "To", "__type": "String", "__value": "Level_1", "__tile": null, "defUid": 19, "realEditorValues": [] },
+								{ "__identifier": "x", "__type": "Int", "__value": 0, "__tile": null, "defUid": 22, "realEditorValues": [] },
+								{ "__identifier": "y", "__type": "Int", "__value": 0, "__tile": null, "defUid": 23, "realEditorValues": [] }
+							],
+							"__worldX": -120,
+							"__worldY": -56
 						}
 					]
 				},
@@ -2794,13 +2814,13 @@
 						0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 						0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 						0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-						0,0,1,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,
+						0,1,1,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,
 						0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-						0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,
+						0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,
 						1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-						0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,1,1,1,1,1,1,0,
+						0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,1,1,1,1,1,1,1,0,
 						0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-						0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,
+						0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,
 						0,0,1,1,1,1,1,1,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,
 						0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 						0,0,0,0,0,1,1,1,1,1,0,0,1,1,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,
