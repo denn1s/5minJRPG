@@ -7,6 +7,7 @@ local json = require("libs.json") -- Assuming you have a JSON parser library
 ---@field filePath string Path to the LDtk file
 ---@field data table Parsed data from the LDtk file
 ---@field levels table<string, table> Levels indexed by identifier
+---@field fileDirectory string Directory containing the LDtk file
 local LDtkParser = {}
 LDtkParser.__index = LDtkParser
 
@@ -17,9 +18,14 @@ function LDtkParser.new(filePath)
     local parser = {
         filePath = filePath,
         data = nil,
-        levels = {}
+        levels = {},
+        fileDirectory = filePath:match("(.*[/\\])") or ""
     }
     setmetatable(parser, LDtkParser)
+    
+    print("LDtkParser: Created for file: " .. filePath)
+    print("LDtkParser: File directory: " .. parser.fileDirectory)
+    
     return parser
 end
 
@@ -167,6 +173,13 @@ function LDtkParser:getEntityDefs()
         return {}
     end
     return self.data.defs.entities
+end
+
+---Resolve a relative path from the LDtk file
+---@param relativePath string Path relative to the LDtk file
+---@return string Full path
+function LDtkParser:resolvePath(relativePath)
+    return self.fileDirectory .. relativePath
 end
 
 return LDtkParser

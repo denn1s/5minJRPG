@@ -236,10 +236,6 @@ function SceneManager:transitionToSceneWithFade(sceneName, preserveCurrentScene,
     return self
 end
 
--- Transition to a new scene immediately (no fade)
----@param sceneName string
----@param preserveCurrentScene? boolean
----@return SceneManager
 function SceneManager:transitionToScene(sceneName, preserveCurrentScene)
     if not self.scenes[sceneName] then
         error("Scene not registered: " .. sceneName)
@@ -258,14 +254,15 @@ function SceneManager:transitionToScene(sceneName, preserveCurrentScene)
     -- Set the new active scene
     self.activeScene = self.scenes[sceneName]
 
+    -- IMPORTANT: Immediately run setup systems to ensure proper initialization
+    -- This ensures all resources are loaded before first render
+    self:runSetupSystems()
+
     -- Restore the scene state
     self:restoreSceneState(sceneName)
 
-    -- Run setup systems if the scene hasn't been initialized
-    if not self.activeScene.initialized then
-        self:runSetupSystems()
-        self.activeScene.initialized = true
-    end
+    -- Mark as initialized after running setup and restoring state
+    self.activeScene.initialized = true
     
     -- Call the onActivated callback if it exists
     if self.activeScene.onActivated then
