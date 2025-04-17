@@ -441,7 +441,7 @@
 		{
 			"__cWid": 16,
 			"__cHei": 16,
-			"identifier": "Town2",
+			"identifier": "Town",
 			"uid": 2,
 			"relPath": "spritesheets/town.png",
 			"embedAtlas": null,
@@ -463,7 +463,7 @@
 		{
 			"__cWid": 16,
 			"__cHei": 16,
-			"identifier": "Interior2",
+			"identifier": "Interior",
 			"uid": 10,
 			"relPath": "spritesheets/interior.png",
 			"embedAtlas": null,
@@ -485,7 +485,7 @@
 		{
 			"__cWid": 16,
 			"__cHei": 16,
-			"identifier": "Dungeon2",
+			"identifier": "Dungeon",
 			"uid": 14,
 			"relPath": "spritesheets/dungeon.png",
 			"embedAtlas": null,
@@ -507,7 +507,7 @@
 		{
 			"__cWid": 3,
 			"__cHei": 4,
-			"identifier": "Hero2",
+			"identifier": "Hero",
 			"uid": 16,
 			"relPath": "spritesheets/hero.png",
 			"embedAtlas": null,

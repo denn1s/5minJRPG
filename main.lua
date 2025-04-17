@@ -36,7 +36,7 @@ function love.load()
 
     -- Initialize TextureManager
     TextureManager.init(nil, true) -- nil for default color map, true for debug mode
-    
+
     -- Create renderer
     renderer = Renderer.new(SCREEN_WIDTH, SCREEN_HEIGHT, SCALE, FONT_SCALE)
     

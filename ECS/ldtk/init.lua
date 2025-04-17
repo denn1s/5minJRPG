@@ -10,6 +10,7 @@ LDtk.TilemapSystem = require("ECS.ldtk.ldtk_tilemap_system")
 LDtk.TilemapRenderSystem = require("ECS.ldtk.ldtk_tilemap_render_system")
 LDtk.TilemapSetupSystem = require("ECS.ldtk.ldtk_tilemap_setup_system")
 LDtk.DoorSystem = require("ECS.ldtk.ldtk_door_system")
+LDtk.TilesetPreloadSystem = require("ECS.ldtk.ldtk_tileset_preload_system")
 
 -- Export the modules
 return LDtk

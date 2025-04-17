@@ -448,7 +448,7 @@ end
 ---@return table|nil Tileset data or nil if not found
 function TextureManager.getTileset(uid)
     local manager = TextureManager.getInstance()
-    
+
     -- If uid is actually a string, it might be a path or identifier
     if type(uid) == "string" then
         -- Try to look up by path
@@ -456,21 +456,13 @@ function TextureManager.getTileset(uid)
         if uidByPath then
             return manager.tilesetCache[uidByPath]
         end
-        
+
         -- Try to look up by identifier
         local uidByIdentifier = manager.tilesetIdentifierMap[uid]
         if uidByIdentifier then
             return manager.tilesetCache[uidByIdentifier]
         end
-        
-        -- Try to convert to number (might be a numeric string)
-        local numericUid = tonumber(uid)
-        if numericUid and manager.tilesetCache[numericUid] then
-            print(string.format("[TextureManager] Found tileset by converting string UID '%s' to number %d", 
-                uid, numericUid))
-            return manager.tilesetCache[numericUid]
-        end
-        
+
         -- Print warning with debug info if not found
         if manager.debugMode then
             print(string.format("[TextureManager] WARNING: Tileset not found with path/identifier '%s'", uid))
@@ -483,35 +475,21 @@ function TextureManager.getTileset(uid)
                 print("  - " .. id)
             end
         end
-        
+
         return nil
     end
-    
-    -- If uid is a number, try to look it up directly
+
+    -- Otherwise, look up by UID
     local tileset = manager.tilesetCache[uid]
-    
-    -- If not found, try as a string
-    if not tileset then
-        local stringUid = tostring(uid)
-        tileset = manager.tilesetCache[stringUid]
-        
-        if tileset then
-            print(string.format("[TextureManager] Found tileset by converting number UID %d to string '%s'", 
-                uid, stringUid))
-            -- Add to the numeric version too for future lookups
-            manager.tilesetCache[uid] = tileset
-        end
-    end
-    
+
     if not tileset and manager.debugMode then
-        print(string.format("[TextureManager] WARNING: Tileset with UID %s (type: %s) not found in cache", 
-            tostring(uid), type(uid)))
+        print(string.format("[TextureManager] WARNING: Tileset with UID %d not found in cache", uid))
         print("[TextureManager] Available UIDs:")
         for cachedUid, _ in pairs(manager.tilesetCache) do
-            print(string.format("  - %s (type: %s)", tostring(cachedUid), type(cachedUid)))
+            print("  - " .. cachedUid)
         end
     end
-    
+
     return tileset
 end
 

@@ -24,11 +24,15 @@ function ExampleLDtkScene.createLDtkScene(sceneManager, ecs)
         return scene
     end
     
-    -- Add setup systems
-    -- Initialize the scene with a fade-in effect
+    -- Add setup systems in the correct order:
+    
+    -- 1. First, add the tileset preload system to ensure all tilesets are loaded
+    scene:addSystem("setup", LDtk.TilesetPreloadSystem.new():init(ecs))
+    
+    -- 2. Initialize the scene with a fade-in effect
     scene:addSystem("setup", Core.SceneInitSystem.new():init(ecs, true, 0.5))
     
-    -- Add the LDtk tilemap setup system (loads all tilesets at startup)
+    -- 3. Add other setup systems
     scene:addSystem("setup", LDtk.TilemapSetupSystem.new():init(ecs, ldtkParser))
     
     -- Add the LDtk loader system (manages level loading)
