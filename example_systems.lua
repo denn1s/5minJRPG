@@ -62,8 +62,6 @@ function ExampleSystems.CreatePlayerSystem:run()
     local SceneManager = require("ECS.scene_manager").SceneManager
     SceneManager:markEntityAsPersistent(player)
 
-    print("Created player entity with texture: " .. heroSpritesheetPath)
-
     return player
 end
 

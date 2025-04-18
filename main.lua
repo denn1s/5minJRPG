@@ -5,9 +5,9 @@
 local ECS = require("ECS.ecs")
 local Renderer = require("ECS.renderer")
 local SceneManager = require("ECS.scene_manager").SceneManager
-local ExampleScenes = require("example_scenes")
 local ExampleLDtkScene = require("example_ldtk_scene")
 local TextureManager = require("ECS.texture_manager")
+local LDtkManager = require("ECS.ldtk.ldtk_manager")
 local Transition = require("ECS.transition")
 
 -- Game constants
@@ -29,34 +29,32 @@ function love.load()
         minwidth = SCREEN_WIDTH,
         minheight = SCREEN_HEIGHT
     })
-    
+
     -- Set pixel rendering settings
     love.graphics.setDefaultFilter("nearest", "nearest")
     love.graphics.setLineStyle("rough")
 
-    -- Initialize TextureManager
-    TextureManager.init(nil, true) -- nil for default color map, true for debug mode
-
     -- Create renderer
     renderer = Renderer.new(SCREEN_WIDTH, SCREEN_HEIGHT, SCALE, FONT_SCALE)
-    
-    -- Initialize scene manager
+
+    -- -- Initialize scene manager
     SceneManager:init(ECS, SCREEN_WIDTH, SCREEN_HEIGHT)
 
-    -- Create scenes
-    ExampleScenes.createOverworldScene(SceneManager, ECS)
-    
-    -- Create our LDtk scene
+    -- -- Initialize ldtk manager
+    local ldtk = LDtkManager.new("assets/map.ldtk")
+    ldtk:load()
+
+    -- -- Create our LDtk scene
     ExampleLDtkScene.createLDtkScene(SceneManager, ECS)
 
-    -- Set default transition duration
+    -- -- Set default transition duration
     Transition.duration = TRANSITION_DURATION
-    
-    -- Start with the LDtk scene
+
+    -- -- Start with the LDtk scene
     SceneManager:transitionToScene("ldtk_scene")
     Transition:start("fade_in", nil, false, TRANSITION_DURATION)
-    
-    print("Game initialized with screen size: " .. SCREEN_WIDTH .. "x" .. SCREEN_HEIGHT)
+
+    print("[main] Game initialized with screen size: " .. SCREEN_WIDTH .. "x" .. SCREEN_HEIGHT .. "\n\n")
 end
 
 function love.update(dt)
@@ -67,7 +65,7 @@ end
 function love.draw()
     -- Begin rendering
     renderer:begin()
-    
+
     -- Set the camera from the active scene
     if SceneManager.activeScene then
         renderer:setCamera(SceneManager.activeScene.camera)
@@ -81,7 +79,7 @@ function love.draw()
 
     -- Draw canvas to screen
     renderer:draw_to_screen()
-    
+
     -- Debug info
     love.graphics.setColor(1, 1, 1)
     if SceneManager.activeScene then
@@ -100,7 +98,7 @@ function love.keypressed(key, scancode, isrepeat)
 
     -- Pass event to scene manager
     SceneManager:handleEvent(event)
-    
+
     -- Debug controls
     if key == "f12" then
         print("Texture cache statistics:")
@@ -125,7 +123,7 @@ function love.keypressed(key, scancode, isrepeat)
         elseif key == "f3" then
             levelId = "Level_2"  -- Dungeon
         end
-        
+
         if levelId and SceneManager.activeScene and SceneManager.activeScene.name == "ldtk_scene" then
             -- Find the LDtk load system
             for _, system in ipairs(SceneManager.activeScene.systems.setup) do
@@ -133,7 +131,7 @@ function love.keypressed(key, scancode, isrepeat)
                     -- Load the new level
                     print("Switching to level: " .. levelId)
                     system:loadLevel(levelId, 10, 10)  -- Default player position in new level
-                    
+
                     -- Update the tilemap render system
                     for _, renderSystem in ipairs(SceneManager.activeScene.systems.render) do
                         if renderSystem.__index == require("ECS.ldtk.ldtk_tilemap_render_system").__index then
