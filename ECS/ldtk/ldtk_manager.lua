@@ -60,9 +60,24 @@ end
 
 function LDtkManager:getLevelPixelSize(id)
     local level = self:getLevel(id)
-    if not level then return 0, 0 end
+    if not level then
+        print("[LDtkManager] WARNING: Level not found:", id)
+        return 0, 0
+    end
+
+    -- Make sure we have valid grid size and dimensions
     local size = self:getGridSize()
-    return level.__cWid * size, level.__cHei * size
+    if not level.__cWid or not level.__cHei or size <= 0 then
+        print("[LDtkManager] WARNING: Invalid level dimensions or grid size:", 
+            level.__cWid, level.__cHei, size)
+        return 0, 0
+    end
+
+    local width = level.__cWid * size
+    local height = level.__cHei * size
+    print("[LDtkManager] Level pixel size for", id, ":", width, height, 
+        "(grid:", level.__cWid, level.__cHei, "× size:", size, ")")
+    return width, height
 end
 
 function LDtkManager:getTilesetTexturePath(layer)

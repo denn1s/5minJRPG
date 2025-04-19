@@ -56,7 +56,7 @@ function Scene.new(name, viewportWidth, viewportHeight, cameraX, cameraY)
             event = {}
         },
         initialized = false,
-        world = nil,  -- Will be set by updateWorld
+        world = nil,  -- Will be set by initWorld
         camera = Camera.new(viewportWidth, viewportHeight, cameraX or 0, cameraY or 0),
         levelId = nil  -- Will be set when a level is loaded
     }
@@ -113,7 +113,6 @@ function SceneManager:registerScene(scene)
     return self
 end
 
-
 -- Create a new scene and register it
 ---@param name string
 ---@param viewportWidth number
@@ -125,6 +124,72 @@ function SceneManager:createScene(name, viewportWidth, viewportHeight, cameraX, 
     local scene = Scene.new(name, viewportWidth, viewportHeight, cameraX, cameraY)
     self:registerScene(scene)
     return scene
+end
+
+-- Initialize the world for a scene from an LDtk level
+---@param scene Scene The scene to initialize the world for
+---@param levelId string LDtk level identifier
+---@return World The created world
+function SceneManager:initWorldFromLDtk(scene, levelId)
+    -- Get the LDtk manager instance
+    local ldtk = LDtkManager.getInstance()
+    
+    -- Get the world manager instance
+    local worldManager = WorldManager.getInstance()
+    
+    -- Get the level data for the specified level ID
+    local level = ldtk:getLevel(levelId)
+    if not level then
+        error("Level not found: " .. levelId)
+    end
+    
+    -- Determine grid size (use LDtk's grid size)
+    local gridSize = ldtk:getGridSize()
+    
+    -- Get width and height in grid cells
+    local gridWidth = level.__cWid or 0
+    local gridHeight = level.__cHei or 0
+    
+    print(string.format("[SceneManager] Initializing world for scene %s, level %s (%dx%d grid with %dpx cells)",
+                        scene.name, levelId, gridWidth, gridHeight, gridSize))
+    
+    -- Validate level dimensions
+    if gridWidth <= 0 or gridHeight <= 0 then
+        error(string.format("Invalid level dimensions: %dx%d", gridWidth, gridHeight))
+    end
+    
+    -- Create a new world for this level
+    local world = worldManager:createWorld(levelId, gridWidth, gridHeight, gridSize)
+    print(string.format("[SceneManager] Created world with dimensions: %dx%d pixels",
+                         world.pixelWidth, world.pixelHeight))
+    
+    -- Set as active world
+    worldManager:setActiveWorld(world)
+    
+    -- Store level ID in world properties
+    world:setProperty("levelId", levelId)
+    
+    -- Update scene properties
+    scene.levelId = levelId
+    scene.world = world
+    
+    -- Update LDtk renderer system if present
+    for _, system in ipairs(scene.systems.render) do
+        if system.__index == require("ECS.ldtk.ldtk_tilemap_render_system").__index then
+            system.currentLevel = levelId
+        end
+    end
+    
+    -- Now that we have a world, properly position the camera
+    -- Default to the center of the world if no specific position is set
+    local centerX = math.floor(world.pixelWidth / 2 - scene.camera.width / 2)
+    local centerY = math.floor(world.pixelHeight / 2 - scene.camera.height / 2)
+    scene.camera:setPosition(scene.camera.x or centerX, scene.camera.y or centerY)
+    
+    print(string.format("[SceneManager] Camera positioned at (%d, %d) for scene %s",
+                         scene.camera.x, scene.camera.y, scene.name))
+    
+    return world
 end
 
 -- Mark an entity as persistent (preserved across scene transitions)
@@ -234,6 +299,10 @@ function SceneManager:transitionToSceneWithFade(sceneName, preserveCurrentScene,
     return self
 end
 
+-- Transition to a scene immediately (no fade)
+---@param sceneName string
+---@param preserveCurrentScene? boolean
+---@return SceneManager
 function SceneManager:transitionToScene(sceneName, preserveCurrentScene)
     if not self.scenes[sceneName] then
         error("Scene not registered: " .. sceneName)
@@ -262,8 +331,8 @@ function SceneManager:transitionToScene(sceneName, preserveCurrentScene)
     -- Mark as initialized after running setup and restoring state
     self.activeScene.initialized = true
 
+    -- Make sure camera is within world bounds, if a world exists
     if self.activeScene.world then
-        -- Make sure the camera position is in bounds of the new world
         self.activeScene.camera:setPosition(
             self.activeScene.camera.x,
             self.activeScene.camera.y
@@ -368,65 +437,9 @@ function SceneManager:handleEvent(event)
     end
 end
 
--- Update or create the world for this scene based on an LDtk level
----@param levelId string LDtk level identifier
----@return World The updated or created world
-function Scene:updateWorld(levelId)
-    -- Get the LDtk manager instance
-    local ldtk = LDtkManager.getInstance()
-
-    -- Get the world manager instance
-    local worldManager = WorldManager.getInstance()
-
-    -- Get the level data for the specified level ID
-    local level = ldtk:getLevel(levelId)
-    if not level then
-        error("Level not found: " .. levelId)
-    end
-
-    -- Determine grid size (use LDtk's grid size)
-    local gridSize = ldtk:getGridSize()
-
-    -- Get width and height in grid cells
-    local gridWidth = level.__cWid or 0
-    local gridHeight = level.__cHei or 0
-
-    print(string.format("[Scene:%s] Updating world for level %s (%dx%d grid with %dpx cells)",
-        self.name, levelId, gridWidth, gridHeight, gridSize))
-
-    -- Get the existing world or create a new one
-    local world = worldManager:getWorld(levelId)
-    if not world then
-        world = worldManager:createWorld(levelId, gridWidth, gridHeight, gridSize)
-    else
-        -- Update existing world dimensions
-        world:setSize(gridWidth, gridHeight)
-        if gridSize ~= world.gridSize then
-            worldManager:setGridSize(gridSize, world)
-        end
-    end
-
-    -- Set this world as the active world
-    worldManager:setActiveWorld(world)
-
-    -- Update level ID in the world properties
-    world:setProperty("levelId", levelId)
-
-    -- Update scene properties
-    self.levelId = levelId
-    self.world = world
-
-    -- Update LDtk renderer system if present
-    for _, system in ipairs(self.systems.render) do
-        if system.__index == require("ECS.ldtk.ldtk_tilemap_render_system").__index then
-            system.currentLevel = levelId
-        end
-    end
-
-    return world
-end
-
-return {
+local ModuleExports = {
     SceneManager = SceneManager,
     Scene = Scene
 }
+
+return ModuleExports

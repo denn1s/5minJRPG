@@ -3,7 +3,6 @@
 
 local Core = require("ECS.core")
 local LDtk = require("ECS.ldtk")
-local TextureManager = require("ECS.texture_manager")
 local dump = require("libs.dump")
 
 local ExampleLDtkScene = {}
@@ -11,10 +10,10 @@ local ExampleLDtkScene = {}
 -- Create an LDtk scene
 function ExampleLDtkScene.createLDtkScene(sceneManager, ecs)
   -- Create a scene
-  local ldtk = LDtk.LDtkManager.getInstance()
-  local scene = sceneManager:createScene("ldtk_scene", 320, 288, 500, 30)
-  scene:updateWorld("Level_1")
+  local scene = sceneManager.createScene("ldtk_scene", 320, 288, 0, 0)
 
+-- Initialize world from LDtk level
+  sceneManager.initWorldFromLDtk(scene, "Level_1")
   -- Add setup systems in the correct order:
 
   -- Initialize the scene with a fade-in effect
