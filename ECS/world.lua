@@ -1,21 +1,30 @@
 -- ECS/world.lua
--- World system for the ECS
+-- World data storage class for the ECS
 
 ---@class World
----@field width number Width of the world
----@field height number Height of the world
+---@field gridWidth number Width of the world in grid cells
+---@field gridHeight number Height of the world in grid cells
+---@field pixelWidth number Width of the world in pixels
+---@field pixelHeight number Height of the world in pixels
+---@field gridSize number Size of each grid cell in pixels
 ---@field properties table<string, any> Additional world properties
 local World = {}
 World.__index = World
 
----@param width number Width of the world
----@param height number Height of the world
+---@param gridWidth number Width of the world in grid cells
+---@param gridHeight number Height of the world in grid cells
+---@param gridSize? number Size of each grid cell in pixels
 ---@param properties? table<string, any> Additional world properties
 ---@return World
-function World.new(width, height, properties)
+function World.new(gridWidth, gridHeight, gridSize, properties)
+    gridSize = gridSize or 8
+
     local world = {
-        width = width,
-        height = height,
+        gridWidth = gridWidth,
+        gridHeight = gridHeight,
+        gridSize = gridSize,
+        pixelWidth = gridWidth * gridSize,
+        pixelHeight = gridHeight * gridSize,
         properties = properties or {}
     }
     setmetatable(world, World)
@@ -39,13 +48,16 @@ function World:getProperty(key, default)
     return self.properties[key] ~= nil and self.properties[key] or default
 end
 
--- Check if a position is within world bounds
----@param x number
----@param y number
----@return boolean
-function World:isInBounds(x, y)
-    return x >= 0 and x < self.width and
-           y >= 0 and y < self.height
+-- Set the size of the world in grid units
+---@param gridWidth number
+---@param gridHeight number
+---@return World
+function World:setSize(gridWidth, gridHeight)
+    self.gridWidth = gridWidth
+    self.gridHeight = gridHeight
+    self.pixelWidth = gridWidth * self.gridSize
+    self.pixelHeight = gridHeight * self.gridSize
+    return self
 end
 
 return World

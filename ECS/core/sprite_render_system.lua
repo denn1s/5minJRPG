@@ -48,6 +48,13 @@ function SpriteRenderSystem:run(renderer)
 
                 if not isVisible then
                     -- Skip rendering entities outside the camera view
+                    print("entity is not visible")
+                    print("[SpriteRenderSystem] camera.x " .. camera.x)
+                    print("[SpriteRenderSystem] camera.x " .. camera.y)
+                    print("[SpriteRenderSystem] transform.x " .. transform.x)
+                    print("[SpriteRenderSystem] transform.y " .. transform.y)
+                    print("[SpriteRenderSystem] transform.gridX " .. transform.gridX)
+                    print("[SpriteRenderSystem] transform.gridY " .. transform.gridY)
                     goto continue
                 end
             end
@@ -67,6 +74,15 @@ function SpriteRenderSystem:run(renderer)
                         sprite.height,
                         sprite.xIndex,
                         sprite.yIndex
+                    )
+                    print(
+                        string.format("Sprite %s: (%s, %s) [%s, %s]",
+                            sprite.texturePath,
+                            transform.gridX,
+                            transform.gridY,
+                            math.floor(transform.x),
+                            math.floor(transform.y)
+                        )
                     )
                 else
                     -- Fallback to draw a placeholder if texture not found in cache

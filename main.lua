@@ -24,10 +24,10 @@ function love.load()
     -- Set up the window
     love.window.setTitle("GameBoy Style ECS Game")
     love.window.setMode(SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE, {
-        vsync = true,
+        vsync = false,
         resizable = false,
-        minwidth = SCREEN_WIDTH,
-        minheight = SCREEN_HEIGHT
+        minwidth = SCREEN_WIDTH * SCALE,
+        minheight = SCREEN_HEIGHT * SCALE
     })
 
     -- Set pixel rendering settings
@@ -84,6 +84,7 @@ function love.draw()
     love.graphics.setColor(1, 1, 1)
     if SceneManager.activeScene then
         love.graphics.print("Current Scene: " .. SceneManager.activeScene.name, 10, 10)
+        love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 20)
     end
 end
 

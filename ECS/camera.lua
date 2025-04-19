@@ -1,29 +1,26 @@
 -- ECS/camera.lua
 -- Camera system for the ECS
+local StaticWorldManager = require("ECS.world_manager")
 
 ---@class Camera
 ---@field x number X position in world coordinates (top-left corner of viewport)
 ---@field y number Y position in world coordinates (top-left corner of viewport)
 ---@field width number Width of the viewport
 ---@field height number Height of the viewport
----@field worldWidth number Width of the world
----@field worldHeight number Height of the world
 local Camera = {}
 Camera.__index = Camera
 
 ---@param width number Width of the viewport (usually SCREEN_WIDTH)
 ---@param height number Height of the viewport (usually SCREEN_HEIGHT)
----@param worldWidth number Width of the world
----@param worldHeight number Height of the world
+---@param x? number Initial X position (defaults to 0)
+---@param y? number Initial Y position (defaults to 0)
 ---@return Camera
-function Camera.new(width, height, worldWidth, worldHeight)
+function Camera.new(width, height, x, y)
     local camera = {
-        x = 0,
-        y = 0,
+        x = x or 0,
+        y = y or 0,
         width = width,
-        height = height,
-        worldWidth = worldWidth,
-        worldHeight = worldHeight
+        height = height
     }
     setmetatable(camera, Camera)
     return camera
@@ -43,10 +40,15 @@ end
 ---@param x number
 ---@return number
 function Camera:clampX(x)
+    local WorldManager = StaticWorldManager.getInstance()
+    local world = WorldManager:getActiveWorld()
+
+    if not world then return x end
+
     if x < 0 then
         return 0
-    elseif x > self.worldWidth - self.width then
-        return math.max(0, self.worldWidth - self.width)
+    elseif x > world.pixelWidth - self.width then
+        return math.max(0, world.pixelWidth - self.width)
     end
     return x
 end
@@ -55,10 +57,15 @@ end
 ---@param y number
 ---@return number
 function Camera:clampY(y)
+    local WorldManager = StaticWorldManager.getInstance()
+    local world = WorldManager:getActiveWorld()
+
+    if not world then return y end
+
     if y < 0 then
         return 0
-    elseif y > self.worldHeight - self.height then
-        return math.max(0, self.worldHeight - self.height)
+    elseif y > world.pixelHeight - self.height then
+        return math.max(0, world.pixelHeight - self.height)
     end
     return y
 end
@@ -88,7 +95,7 @@ end
 ---@return boolean
 function Camera:isPointVisible(x, y)
     return x >= self.x and x <= self.x + self.width and
-           y >= self.y and y <= self.y + self.height
+        y >= self.y and y <= self.y + self.height
 end
 
 -- Check if a rectangle is at least partially within the camera's view
@@ -99,7 +106,7 @@ end
 ---@return boolean
 function Camera:isRectVisible(x, y, width, height)
     return x + width >= self.x and x <= self.x + self.width and
-           y + height >= self.y and y <= self.y + self.height
+        y + height >= self.y and y <= self.y + self.height
 end
 
 -- Convert world coordinates to screen coordinates

@@ -5,24 +5,34 @@ local Components = {}
 
 ---@class TransformComponent
 ---@field name string Always "transform"
----@field x number X-coordinate
----@field y number Y-coordinate
----@field rotation number Rotation in radians
----@field scale number Scale factor
+---@field gridX number Grid X-coordinate
+---@field gridY number Grid Y-coordinate
+---@field x number Pixel X-coordinate
+---@field y number Pixel Y-coordinate
 
 -- Transform component (position, rotation, scale)
----@param x? number
----@param y? number
----@param rotation? number
----@param scale? number
+---@param gridX? number Position in the grid
+---@param gridY? number Position in the grid
 ---@return TransformComponent
-function Components.transform(x, y, rotation, scale)
+function Components.transform(gridX, gridY)
+    local WorldManager = require("ECS.world_manager").getInstance()
+    local world = WorldManager:getActiveWorld()
+
+    gridX = gridX or 0
+    gridY = gridY or 0
+
+    -- Calculate pixel position from grid position using WorldManager
+    local pixelX, pixelY = 0, 0
+    if world then
+        pixelX, pixelY = WorldManager:gridToPixel(gridX, gridY)
+    end
+
     return {
         name = "transform",
-        x = x or 0,
-        y = y or 0,
-        rotation = rotation or 0,
-        scale = scale or 1
+        gridX = gridX,
+        gridY = gridY,
+        x = pixelX,
+        y = pixelY
     }
 end
 

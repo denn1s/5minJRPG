@@ -36,7 +36,7 @@ function ExampleSystems.CreatePlayerSystem:run()
     player:addComponent(Components.sprite(heroSpritesheetPath, 16, 16, 0, 0))
 
     -- Add transform component for position
-    player:addComponent(Components.transform(80, 72))
+    player:addComponent(Components.transform(65, 5))
 
     -- Add velocity component for movement
     player:addComponent(Components.velocity(0, 0))
@@ -63,24 +63,6 @@ function ExampleSystems.CreatePlayerSystem:run()
     SceneManager:markEntityAsPersistent(player)
 
     return player
-end
-
--- Setup System: Create World Objects
-ExampleSystems.CreateWorldSystem = setmetatable({}, {__index = Systems.SetupSystem})
-ExampleSystems.CreateWorldSystem.__index = ExampleSystems.CreateWorldSystem
-
-function ExampleSystems.CreateWorldSystem.new()
-    local system = Systems.SetupSystem.new()
-    setmetatable(system, ExampleSystems.CreateWorldSystem)
-    return system
-end
-
-function ExampleSystems.CreateWorldSystem:init(ecs)
-    Systems.SetupSystem.init(self, ecs)
-    return self
-end
-
-function ExampleSystems.CreateWorldSystem:run()
 end
 
 -- Update System: Process Input
@@ -112,7 +94,7 @@ function ExampleSystems.InputSystem:run(dt)
             velocity.dy = 0
 
             -- Apply movement based on key presses
-            local speed = 30  -- pixels per second
+            local speed = 60  -- pixels per second
 
             if love.keyboard.isDown(input.keyMap.up) then
                 velocity.dy = -speed
@@ -124,91 +106,6 @@ function ExampleSystems.InputSystem:run(dt)
                 velocity.dx = -speed
             elseif love.keyboard.isDown(input.keyMap.right) then
                 velocity.dx = speed
-            end
-        end
-    end
-end
-
--- Update System: Movement and Collision
-ExampleSystems.MovementSystem = setmetatable({}, {__index = Systems.UpdateSystem})
-ExampleSystems.MovementSystem.__index = ExampleSystems.MovementSystem
-
-function ExampleSystems.MovementSystem.new()
-    local system = Systems.UpdateSystem.new()
-    setmetatable(system, ExampleSystems.MovementSystem)
-    return system
-end
-
-function ExampleSystems.MovementSystem:init(ecs)
-    Systems.UpdateSystem.init(self, ecs)
-    return self
-end
-
-function ExampleSystems.MovementSystem:run(dt)
-    -- Get the active scene to access world bounds
-    local SceneManager = require("ECS.scene_manager").SceneManager
-    local activeScene = SceneManager.activeScene
-    if not activeScene then return end
-
-    local world = activeScene.world
-
-    -- Get all entities with both transform and velocity components
-    local entities = self.ecs:getEntitiesWithComponent("velocity")
-
-    for _, entity in ipairs(entities) do
-        local transform = entity:getComponent("transform")
-        local velocity = entity:getComponent("velocity")
-
-        if transform and velocity then
-            -- Store previous position for collision resolution
-            local prevX, prevY = transform.x, transform.y
-
-            -- Update position based on velocity
-            transform.x = transform.x + velocity.dx * dt
-            transform.y = transform.y + velocity.dy * dt
-
-            -- Keep within world bounds
-            if transform.x < 0 then
-                transform.x = 0
-            elseif transform.x > world.width then
-                transform.x = world.width
-            end
-
-            if transform.y < 0 then
-                transform.y = 0
-            elseif transform.y > world.height then
-                transform.y = world.height
-            end
-
-            -- Simple collision detection
-            if entity:hasComponent("collision") then
-                local entityCollision = entity:getComponent("collision")
-
-                -- Check collision with other entities
-                local collisionEntities = self.ecs:getEntitiesWithComponent("collision")
-
-                for _, otherEntity in ipairs(collisionEntities) do
-                    -- Skip self-collision
-                    if otherEntity.id ~= entity.id then
-                        local otherTransform = otherEntity:getComponent("transform")
-                        local otherCollision = otherEntity:getComponent("collision")
-
-                        if otherTransform and otherCollision then
-                            -- Distance-based collision check
-                            local dx = transform.x - otherTransform.x
-                            local dy = transform.y - otherTransform.y
-                            local distance = math.sqrt(dx*dx + dy*dy)
-                            local minDistance = entityCollision.radius + otherCollision.radius
-
-                            if distance < minDistance then
-                                -- Collision detected, revert to previous position
-                                transform.x = prevX
-                                transform.y = prevY
-                                break
-                            end
-                        end
-                    end
-                end
             end
         end
     end

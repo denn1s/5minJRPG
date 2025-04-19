@@ -12,7 +12,8 @@ local ExampleLDtkScene = {}
 function ExampleLDtkScene.createLDtkScene(sceneManager, ecs)
   -- Create a scene
   local ldtk = LDtk.LDtkManager.getInstance()
-  local scene = sceneManager:createScene("ldtk_scene", 320, 288)
+  local scene = sceneManager:createScene("ldtk_scene", 320, 288, 500, 30)
+  scene:updateWorld("Level_1")
 
   -- Add setup systems in the correct order:
 
@@ -34,14 +35,14 @@ function ExampleLDtkScene.createLDtkScene(sceneManager, ecs)
   scene:addSystem("update", Core.PlayerAnimationSystem.new():init(ecs))
 
   -- Update position and handle collisions
-  scene:addSystem("update", require("example_systems").MovementSystem.new():init(ecs))
+  scene:addSystem("update", require("ECS.core.movement_system").new():init(ecs))
 
   -- Make the camera follow the player
-  scene:addSystem("update", Core.CameraSystem.new():init(ecs, scene.camera, "follow"))
+  scene:addSystem("update", Core.CameraSystem.new():init(ecs, scene.camera))
 
   -- Add render systems
   -- Add the LDtk tilemap render system (renders the current level)
-  scene:addSystem("render", LDtk.TilemapRenderSystem.new():init(ecs, "Level_1"))
+  scene:addSystem("render", LDtk.TilemapRenderSystem.new():init(ecs, scene.levelId))
 
   -- Use our dedicated SpriteRenderSystem from the systems index
   scene:addSystem("render", Core.SpriteRenderSystem.new():init(ecs))

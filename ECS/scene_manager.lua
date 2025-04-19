@@ -4,6 +4,8 @@
 local Transition = require("ECS.transition")
 local Camera = require("ECS.camera")
 local World = require("ECS.world")
+local LDtkManager = require("ECS.ldtk.ldtk_manager")
+local WorldManager = require("ECS.world_manager")
 
 ---@class SceneState
 ---@field entities table[] Entities in this scene
@@ -38,17 +40,13 @@ local SceneManager = {
 local Scene = {}
 Scene.__index = Scene
 
----@param name string
----@param viewportWidth number
----@param viewportHeight number
----@param worldWidth? number
----@param worldHeight? number
+---@param name string Name of the scene
+---@param viewportWidth number Width of the viewport
+---@param viewportHeight number Height of the viewport
+---@param cameraX? number Initial camera X position (optional, defaults to 0)
+---@param cameraY? number Initial camera Y position (optional, defaults to 0)
 ---@return Scene
-function Scene.new(name, viewportWidth, viewportHeight, worldWidth, worldHeight)
-    -- Default world size to viewport size if not provided
-    worldWidth = worldWidth or viewportWidth
-    worldHeight = worldHeight or viewportHeight
-    
+function Scene.new(name, viewportWidth, viewportHeight, cameraX, cameraY)
     local scene = {
         name = name,
         systems = {
@@ -58,8 +56,9 @@ function Scene.new(name, viewportWidth, viewportHeight, worldWidth, worldHeight)
             event = {}
         },
         initialized = false,
-        world = World.new(worldWidth, worldHeight),
-        camera = Camera.new(viewportWidth, viewportHeight, worldWidth, worldHeight)
+        world = nil,  -- Will be set by updateWorld
+        camera = Camera.new(viewportWidth, viewportHeight, cameraX or 0, cameraY or 0),
+        levelId = nil  -- Will be set when a level is loaded
     }
     setmetatable(scene, Scene)
     return scene
@@ -87,11 +86,11 @@ function SceneManager:init(ecs, viewportWidth, viewportHeight)
     self.ecs = ecs
     self.viewportWidth = viewportWidth
     self.viewportHeight = viewportHeight
-    
+
     -- Add the transition system
     local TransitionSystem = require("ECS.core.transition_system")
     self.transitionSystem = TransitionSystem.new():init(ecs, self)
-    
+
     return self
 end
 
@@ -114,17 +113,16 @@ function SceneManager:registerScene(scene)
     return self
 end
 
+
 -- Create a new scene and register it
 ---@param name string
----@param worldWidth? number
----@param worldHeight? number
+---@param viewportWidth number
+---@param viewportHeight number
+---@param cameraX? number Initial camera X position
+---@param cameraY? number Initial camera Y position
 ---@return Scene
-function SceneManager:createScene(name, worldWidth, worldHeight)
-    -- Default world size to viewport size if not provided
-    worldWidth = worldWidth or self.viewportWidth
-    worldHeight = worldHeight or self.viewportHeight
-    
-    local scene = Scene.new(name, self.viewportWidth, self.viewportHeight, worldWidth, worldHeight)
+function SceneManager:createScene(name, viewportWidth, viewportHeight, cameraX, cameraY)
+    local scene = Scene.new(name, viewportWidth, viewportHeight, cameraX, cameraY)
     self:registerScene(scene)
     return scene
 end
@@ -232,7 +230,7 @@ function SceneManager:transitionToSceneWithFade(sceneName, preserveCurrentScene,
 
     -- Start a fade-out transition
     Transition:start("fade_out", sceneName, preserveCurrentScene, duration)
-    
+
     return self
 end
 
@@ -263,7 +261,15 @@ function SceneManager:transitionToScene(sceneName, preserveCurrentScene)
 
     -- Mark as initialized after running setup and restoring state
     self.activeScene.initialized = true
-    
+
+    if self.activeScene.world then
+        -- Make sure the camera position is in bounds of the new world
+        self.activeScene.camera:setPosition(
+            self.activeScene.camera.x,
+            self.activeScene.camera.y
+        )
+    end
+
     -- Call the onActivated callback if it exists
     if self.activeScene.onActivated then
         self.activeScene:onActivated()
@@ -282,7 +288,7 @@ function SceneManager:returnToPreviousSceneWithFade(duration)
 
     -- Start a fade-out transition to the previous scene
     Transition:start("fade_out", self.previousScene.name, false, duration)
-    
+
     return self
 end
 
@@ -322,7 +328,7 @@ function SceneManager:update(dt)
     if self.transitionSystem then
         self.transitionSystem:run(dt)
     end
-    
+
     if not self.activeScene then return end
 
     for _, system in ipairs(self.activeScene.systems.update) do
@@ -352,7 +358,7 @@ end
 function SceneManager:handleEvent(event)
     -- Skip all events if input is locked (during transitions)
     if Transition:isInputLocked() then return end
-    
+
     if not self.activeScene then return end
 
     for _, system in ipairs(self.activeScene.systems.event) do
@@ -360,6 +366,64 @@ function SceneManager:handleEvent(event)
             system:run(event)
         end
     end
+end
+
+-- Update or create the world for this scene based on an LDtk level
+---@param levelId string LDtk level identifier
+---@return World The updated or created world
+function Scene:updateWorld(levelId)
+    -- Get the LDtk manager instance
+    local ldtk = LDtkManager.getInstance()
+
+    -- Get the world manager instance
+    local worldManager = WorldManager.getInstance()
+
+    -- Get the level data for the specified level ID
+    local level = ldtk:getLevel(levelId)
+    if not level then
+        error("Level not found: " .. levelId)
+    end
+
+    -- Determine grid size (use LDtk's grid size)
+    local gridSize = ldtk:getGridSize()
+
+    -- Get width and height in grid cells
+    local gridWidth = level.__cWid or 0
+    local gridHeight = level.__cHei or 0
+
+    print(string.format("[Scene:%s] Updating world for level %s (%dx%d grid with %dpx cells)",
+        self.name, levelId, gridWidth, gridHeight, gridSize))
+
+    -- Get the existing world or create a new one
+    local world = worldManager:getWorld(levelId)
+    if not world then
+        world = worldManager:createWorld(levelId, gridWidth, gridHeight, gridSize)
+    else
+        -- Update existing world dimensions
+        world:setSize(gridWidth, gridHeight)
+        if gridSize ~= world.gridSize then
+            worldManager:setGridSize(gridSize, world)
+        end
+    end
+
+    -- Set this world as the active world
+    worldManager:setActiveWorld(world)
+
+    -- Update level ID in the world properties
+    world:setProperty("levelId", levelId)
+
+    -- Update scene properties
+    self.levelId = levelId
+    self.world = world
+
+    -- Update LDtk renderer system if present
+    for _, system in ipairs(self.systems.render) do
+        if system.__index == require("ECS.ldtk.ldtk_tilemap_render_system").__index then
+            system.currentLevel = levelId
+        end
+    end
+
+    return world
 end
 
 return {
