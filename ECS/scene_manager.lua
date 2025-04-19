@@ -79,61 +79,53 @@ end
 function SceneManager:initWorldFromLDtk(scene, levelId)
     -- Get the LDtk manager instance
     local ldtk = LDtkManager.getInstance()
-    
+
     -- Get the world manager instance
     local worldManager = WorldManager.getInstance()
-    
+
     -- Get the level data for the specified level ID
     local level = ldtk:getLevel(levelId)
     if not level then
         error("Level not found: " .. levelId)
     end
-    
+
     -- Determine grid size (use LDtk's grid size)
     local gridSize = ldtk:getGridSize()
-    
+
     -- Get width and height in grid cells
     local gridWidth, gridHeight = ldtk:getLevelGridSize(levelId)
-    
-    print(string.format("[SceneManager] Initializing world for scene %s, level %s (%dx%d grid with %dpx cells)",
-                        scene.name, levelId, gridWidth, gridHeight, gridSize))
-    
+
     -- Validate level dimensions
     if gridWidth <= 0 or gridHeight <= 0 then
         error(string.format("Invalid level dimensions: %dx%d", gridWidth, gridHeight))
     end
-    
+
     -- Create a new world for this level
     local world = worldManager:createWorld(levelId, gridWidth, gridHeight, gridSize)
-    print(string.format("[SceneManager] Created world with dimensions: %dx%d pixels",
-                         world.pixelWidth, world.pixelHeight))
-    
+
     -- Set as active world
     worldManager:setActiveWorld(world)
-    
+
     -- Store level ID in world properties
     world:setProperty("levelId", levelId)
-    
+
     -- Update scene properties
     scene.levelId = levelId
     scene.world = world
-    
+
     -- Update LDtk renderer system if present
     for _, system in ipairs(scene.systems.render) do
         if system.__index == require("ECS.ldtk.ldtk_tilemap_render_system").__index then
             system.currentLevel = levelId
         end
     end
-    
+
     -- Now that we have a world, properly position the camera
     -- Default to the center of the world if no specific position is set
     local centerX = math.floor(world.pixelWidth / 2 - scene.camera.width / 2)
     local centerY = math.floor(world.pixelHeight / 2 - scene.camera.height / 2)
     scene.camera:setPosition(scene.camera.x or centerX, scene.camera.y or centerY)
-    
-    print(string.format("[SceneManager] Camera positioned at (%d, %d) for scene %s",
-                         scene.camera.x, scene.camera.y, scene.name))
-    
+
     return world
 end
 

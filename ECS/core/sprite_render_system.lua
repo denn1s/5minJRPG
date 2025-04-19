@@ -51,11 +51,6 @@ function SpriteRenderSystem:run(renderer)
                     goto continue
                 end
             end
-            print("[SpriteRenderSystem] camera.x " .. camera.x)
-            print("[SpriteRenderSystem] camera.x " .. camera.y)
-            print("[SpriteRenderSystem] camera.width " .. camera.width)
-            print("[SpriteRenderSystem] camera.height " .. camera.height)
-            print("[SpriteRenderSystem] visible area " .. string.format("(%s < %s) (%s < %s)", camera.x, camera.x + camera.width, camera.y, camera.y + camera.height))
 
             -- Get texture data from texture manager using the texture path
             if sprite.texturePath then
@@ -73,20 +68,10 @@ function SpriteRenderSystem:run(renderer)
                         sprite.xIndex,
                         sprite.yIndex
                     )
-                    print(
-                        string.format("Sprite %s: (%s, %s) [%s, %s]",
-                            sprite.texturePath,
-                            transform.gridX,
-                            transform.gridY,
-                            math.floor(transform.x),
-                            math.floor(transform.y)
-                        )
-                    )
-                else
+               else
                     -- Fallback to draw a placeholder if texture not found in cache
                     self:drawPlaceholder(renderer, transform.x, transform.y)
 
-                    -- Print warning that the texture wasn't found
                     print("SpriteRenderSystem: Texture not found for entity " .. entity.id ..
                           ": " .. sprite.texturePath)
                 end
@@ -123,14 +108,7 @@ end
 ---@param yIndex number
 function SpriteRenderSystem:drawSpritefromSheet(renderer, textureData, x, y, width, height, xIndex, yIndex)
     -- Convert world coordinates to screen coordinates using the renderer's camera
-
-    print(
-        string.format("Sprite is in (%s, %s)", x, y)
-    )
-
     local screenX, screenY = renderer:worldToScreen(x, y)
-    print(string.format("Rendering sprite at (%spx, %spx)", screenX, screenY))
-
 
     -- Calculate the starting position in the spritesheet
     local startX = xIndex * width + 1  -- +1 because Lua arrays are 1-indexed

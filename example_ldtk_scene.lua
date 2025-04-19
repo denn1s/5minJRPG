@@ -10,7 +10,7 @@ local ExampleLDtkScene = {}
 -- Create an LDtk scene
 function ExampleLDtkScene.createLDtkScene(sceneManager, ecs)
   -- Create a scene
-  local scene = sceneManager:createScene("ldtk_scene", 0, 0)
+  local scene = sceneManager:createScene("ldtk_scene", 500, 12)
 
 -- Initialize world from LDtk level
   sceneManager:initWorldFromLDtk(scene, "Level_1")
@@ -55,20 +55,6 @@ function ExampleLDtkScene.createLDtkScene(sceneManager, ecs)
   --     -- Add event systems
   --     -- Handle key presses
   --     scene:addSystem("event", require("example_systems").KeyPressSystem.new():init(ecs))
-
-  --     -- Set initial camera position (center of the world)
-  --     scene.camera:setPosition(80, 72)
-
-  --     -- Add F12 key binding to toggle TextureManager stats
-  --     scene.keyBindings = {
-  --         ["f12"] = function()
-  --             print("\n=== TextureManager Statistics ===")
-  --             TextureManager.printCacheStats()
-  --             TextureManager.printTilesetCacheStats()
-  --             print("===============================\n")
-  --         end
-  --     }
-
   --     print("Created LDtk scene")
 
   return scene

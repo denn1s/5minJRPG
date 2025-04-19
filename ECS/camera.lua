@@ -34,8 +34,6 @@ function Camera:setPosition(x, y)
     self.x = self:clampX(x)
     self.y = self:clampY(y)
 
-    print("Setting camera at ", self.x, self.y)
-
     return self
 end
 

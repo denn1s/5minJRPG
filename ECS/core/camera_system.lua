@@ -61,12 +61,10 @@ function CameraSystem:run(_)
         return
     end
 
-    print("Target is at", transform.x, transform.y)
-
     -- Calculate target camera position
     -- Center the camera on the entity, plus any offsets
-    local targetX = transform.x - self.camera.width / 2
-    local targetY = transform.y - self.camera.height / 2
+    local targetX = transform.x - (self.camera.width / 2) + 8   -- half sprite width
+    local targetY = transform.y - (self.camera.height / 2) + 8
     -- Update camera position (will be clamped to world bounds by the camera)
     self.camera:setPosition(targetX, targetY)
 end

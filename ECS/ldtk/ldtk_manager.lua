@@ -75,8 +75,6 @@ function LDtkManager:getLevelPixelSize(id)
 
     local width = level.pxWid
     local height = level.pxHei
-    print("[LDtkManager] Level pixel size for", id, ":", width, height, 
-        "(grid:", level.pxWid, level.pxHei, " of size:", ")")
     return width, height
 end
 
@@ -100,8 +98,6 @@ function LDtkManager:getLevelGridSize(id)
         local height = level.pxHei
         level.gWid = math.floor(width/size)
         level.gHei = math.floor(height/size)
-        print("[LDtkManager] Level pixel size for", id, ":", width, height, 
-            "(grid:", level.gWid, level.gHei, " of size:", size, ")")
     end
     return level.gWid, level.gHei
 end
