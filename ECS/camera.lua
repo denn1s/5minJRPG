@@ -31,17 +31,10 @@ end
 ---@param y number
 ---@return Camera
 function Camera:setPosition(x, y)
-    print("[Camera] Setting position:", x, y)
-    local originalX = self.x
-    local originalY = self.y
-
     self.x = self:clampX(x)
     self.y = self:clampY(y)
 
-    print("[Camera] Position after clamping:", self.x, self.y)
-    if originalX ~= self.x or originalY ~= self.y then
-        print("[Camera] WARNING: Position was clamped")
-    end
+    print("Setting camera at ", self.x, self.y)
 
     return self
 end
@@ -50,30 +43,17 @@ end
 ---@param x number
 ---@return number
 function Camera:clampX(x)
+    if x < 0 then return 0 end
+
     local WorldManager = StaticWorldManager.getInstance()
     local world = WorldManager:getActiveWorld()
 
-    if not world then 
-        print("[Camera] WARNING: No active world for clampX, returning raw value:", x)
-        return x 
-    end
-
-    print("[Camera] clampX - world width:", world.pixelWidth, "camera width:", self.width)
-
-    -- Check for invalid world dimensions
-    if world.pixelWidth <= 0 then
-        print("[Camera] WARNING: World has invalid width:", world.pixelWidth, 
-            "- not clamping camera position")
+    if not world then
         return x
     end
 
-    if x < 0 then
-        print("[Camera] clampX - clamping to 0 (min)")
-        return 0
-    elseif x > world.pixelWidth - self.width then
-        local maxX = math.max(0, world.pixelWidth - self.width)
-        print("[Camera] clampX - clamping to maxX:", maxX)
-        return maxX
+    if x > world.pixelWidth - self.width then
+        return math.max(0, world.pixelWidth - self.width)
     end
     return x
 end
@@ -82,32 +62,18 @@ end
 ---@param y number
 ---@return number
 function Camera:clampY(y)
+    if y < 0 then return 0 end
     local WorldManager = StaticWorldManager.getInstance()
     local world = WorldManager:getActiveWorld()
 
-    if not world then 
-        print("[Camera] WARNING: No active world for clampY, returning raw value:", y)
+    if not world then
         return y
     end
 
-    print("[Camera] clampY - world height:", world.pixelHeight, "camera width:", self.height)
-
-    -- Check for invalid world dimensions
-    if world.pixelHeight <= 0 then
-        print("[Camera] WARNING: World has invalid height:", world.pixelHeight, 
-            "- not clamping camera position")
-        return y
+    if y > world.pixelHeight - self.height then
+        return math.max(0, world.pixelHeight - self.height)
     end
-
-    if y < 0 then
-        print("[Camera] clampY - clamping to 0 (min)")
-        return 0
-    elseif y > world.pixelHeight - self.height then
-        local maxY = math.max(0, world.pixelHeight - self.height)
-        print("[Camera] clampY - clamping to maxY:", maxY)
-        return maxY
-    end
-    return x
+    return y
 end
 
 -- Move the camera by a delta amount

@@ -4,7 +4,7 @@
 -- Import required modules
 local ECS = require("ECS.ecs")
 local Renderer = require("ECS.renderer")
-local SceneManager = require("ECS.scene_manager").SceneManager
+local SceneManager = require("ECS.scene_manager")
 local ExampleLDtkScene = require("example_ldtk_scene")
 local TextureManager = require("ECS.texture_manager")
 local LDtkManager = require("ECS.ldtk.ldtk_manager")
@@ -26,8 +26,6 @@ function love.load()
     love.window.setMode(SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE, {
         vsync = false,
         resizable = false,
-        minwidth = SCREEN_WIDTH * SCALE,
-        minheight = SCREEN_HEIGHT * SCALE
     })
 
     -- Set pixel rendering settings

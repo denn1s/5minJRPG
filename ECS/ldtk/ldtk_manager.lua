@@ -34,7 +34,7 @@ function LDtkManager.getInstance()
     return instance
 end
 
-function LDtkManager:load()
+function LDtkManager:load(levelWidth, levelHeight)
     local file = assert(io.open(self.filePath, "r"))
     local content = file:read("*all")
     file:close()
@@ -43,6 +43,8 @@ function LDtkManager:load()
     if not ok then error("Failed to parse LDtk: " .. tostring(parsed)) end
 
     self.data = parsed
+    self.levelWidth = levelWidth
+    self.levelHeight = levelHeight
     for _, level in ipairs(parsed.levels) do
         self.levels[level.identifier] = level
     end
@@ -55,7 +57,7 @@ function LDtkManager:getLevel(id)
 end
 
 function LDtkManager:getGridSize()
-    return self.data.defaultGridSize or 16
+    return self.data.defaultGridSize or 8
 end
 
 function LDtkManager:getLevelPixelSize(id)
@@ -65,19 +67,43 @@ function LDtkManager:getLevelPixelSize(id)
         return 0, 0
     end
 
-    -- Make sure we have valid grid size and dimensions
-    local size = self:getGridSize()
-    if not level.__cWid or not level.__cHei or size <= 0 then
+    if not level.pxWid or not level.pxHei or size <= 0 then
         print("[LDtkManager] WARNING: Invalid level dimensions or grid size:", 
-            level.__cWid, level.__cHei, size)
+            level.pxWid, level.pxHei)
         return 0, 0
     end
 
-    local width = level.__cWid * size
-    local height = level.__cHei * size
+    local width = level.pxWid
+    local height = level.pxHei
     print("[LDtkManager] Level pixel size for", id, ":", width, height, 
-        "(grid:", level.__cWid, level.__cHei, "× size:", size, ")")
+        "(grid:", level.pxWid, level.pxHei, " of size:", ")")
     return width, height
+end
+
+function LDtkManager:getLevelGridSize(id)
+    local level = self:getLevel(id)
+    if not level then
+        print("[LDtkManager] WARNING: Level not found:", id)
+        return 0, 0
+    end
+
+    -- Make sure we have valid grid size and dimensions
+    local size = self:getGridSize()
+    if not level.pxWid or not level.pxHei or size <= 0 then
+        print("[LDtkManager] WARNING: Invalid level dimensions or grid size:", 
+            level.pxWid, level.pxHei, size)
+        return 0, 0
+    end
+
+    if not level.gWid or not level.gHei then
+        local width = level.pxWid
+        local height = level.pxHei
+        level.gWid = math.floor(width/size)
+        level.gHei = math.floor(height/size)
+        print("[LDtkManager] Level pixel size for", id, ":", width, height, 
+            "(grid:", level.gWid, level.gHei, " of size:", size, ")")
+    end
+    return level.gWid, level.gHei
 end
 
 function LDtkManager:getTilesetTexturePath(layer)

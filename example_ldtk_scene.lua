@@ -10,10 +10,10 @@ local ExampleLDtkScene = {}
 -- Create an LDtk scene
 function ExampleLDtkScene.createLDtkScene(sceneManager, ecs)
   -- Create a scene
-  local scene = sceneManager.createScene("ldtk_scene", 320, 288, 0, 0)
+  local scene = sceneManager:createScene("ldtk_scene", 0, 0)
 
 -- Initialize world from LDtk level
-  sceneManager.initWorldFromLDtk(scene, "Level_1")
+  sceneManager:initWorldFromLDtk(scene, "Level_1")
   -- Add setup systems in the correct order:
 
   -- Initialize the scene with a fade-in effect

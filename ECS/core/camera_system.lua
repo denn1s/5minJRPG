@@ -7,9 +7,6 @@ local Systems = require("ECS.systems")
 ---@field ecs table ECS instance
 ---@field camera table Camera instance
 ---@field target table|nil Target entity to follow
----@field offsetX number X offset from target center
----@field offsetY number Y offset from target center
----@field smoothing number Smoothing factor for camera movement (0-1, 0 = instant)
 local CameraSystem = setmetatable({}, {__index = Systems.UpdateSystem})
 CameraSystem.__index = CameraSystem
 
@@ -17,15 +14,6 @@ CameraSystem.__index = CameraSystem
 function CameraSystem.new()
     local system = Systems.UpdateSystem.new()
     setmetatable(system, CameraSystem)
-
-    -- Default configuration
-    system.offsetX = 0
-    system.offsetY = 0
-    system.smoothing = 0  -- Default to instant movement (no smoothing)
-
-    -- This system should run even when input is locked (during transitions)
-    system.ignoreInputLock = true
-
     return system
 end
 
@@ -49,15 +37,6 @@ end
 ---@return CameraSystem
 function CameraSystem:setTarget(targetEntity, offsetX, offsetY)
     self.target = targetEntity
-    self.offsetX = offsetX or 0
-    self.offsetY = offsetY or 0
-    return self
-end
-
----@param smoothingFactor number Smoothing factor (0-1, 0 = instant, 1 = no movement)
----@return CameraSystem
-function CameraSystem:setSmoothing(smoothingFactor)
-    self.smoothing = math.max(0, math.min(1, smoothingFactor))
     return self
 end
 
@@ -82,21 +61,12 @@ function CameraSystem:run(_)
         return
     end
 
+    print("Target is at", transform.x, transform.y)
+
     -- Calculate target camera position
     -- Center the camera on the entity, plus any offsets
-    local targetX = transform.x - self.camera.width / 2 + self.offsetX
-    local targetY = transform.y - self.camera.height / 2 + self.offsetY
-
-    -- Apply smoothing if enabled
-    if self.smoothing > 0 then
-        -- Linear interpolation between current and target position
-        local currentX = self.camera.x
-        local currentY = self.camera.y
-
-        targetX = currentX + (targetX - currentX) * (1 - self.smoothing)
-        targetY = currentY + (targetY - currentY) * (1 - self.smoothing)
-    end
-
+    local targetX = transform.x - self.camera.width / 2
+    local targetY = transform.y - self.camera.height / 2
     -- Update camera position (will be clamped to world bounds by the camera)
     self.camera:setPosition(targetX, targetY)
 end

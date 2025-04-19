@@ -36,7 +36,7 @@ function ExampleSystems.CreatePlayerSystem:run()
     player:addComponent(Components.sprite(heroSpritesheetPath, 16, 16, 0, 0))
 
     -- Add transform component for position
-    player:addComponent(Components.transform(65, 5))
+    player:addComponent(Components.transform(65, 4))
 
     -- Add velocity component for movement
     player:addComponent(Components.velocity(0, 0))
@@ -59,7 +59,7 @@ function ExampleSystems.CreatePlayerSystem:run()
     })
 
     -- Mark player as persistent across scenes
-    local SceneManager = require("ECS.scene_manager").SceneManager
+    local SceneManager = require("ECS.scene_manager")
     SceneManager:markEntityAsPersistent(player)
 
     return player

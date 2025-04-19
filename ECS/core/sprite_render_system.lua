@@ -48,16 +48,14 @@ function SpriteRenderSystem:run(renderer)
 
                 if not isVisible then
                     -- Skip rendering entities outside the camera view
-                    print("entity is not visible")
-                    print("[SpriteRenderSystem] camera.x " .. camera.x)
-                    print("[SpriteRenderSystem] camera.x " .. camera.y)
-                    print("[SpriteRenderSystem] transform.x " .. transform.x)
-                    print("[SpriteRenderSystem] transform.y " .. transform.y)
-                    print("[SpriteRenderSystem] transform.gridX " .. transform.gridX)
-                    print("[SpriteRenderSystem] transform.gridY " .. transform.gridY)
                     goto continue
                 end
             end
+            print("[SpriteRenderSystem] camera.x " .. camera.x)
+            print("[SpriteRenderSystem] camera.x " .. camera.y)
+            print("[SpriteRenderSystem] camera.width " .. camera.width)
+            print("[SpriteRenderSystem] camera.height " .. camera.height)
+            print("[SpriteRenderSystem] visible area " .. string.format("(%s < %s) (%s < %s)", camera.x, camera.x + camera.width, camera.y, camera.y + camera.height))
 
             -- Get texture data from texture manager using the texture path
             if sprite.texturePath then
@@ -125,7 +123,14 @@ end
 ---@param yIndex number
 function SpriteRenderSystem:drawSpritefromSheet(renderer, textureData, x, y, width, height, xIndex, yIndex)
     -- Convert world coordinates to screen coordinates using the renderer's camera
+
+    print(
+        string.format("Sprite is in (%s, %s)", x, y)
+    )
+
     local screenX, screenY = renderer:worldToScreen(x, y)
+    print(string.format("Rendering sprite at (%spx, %spx)", screenX, screenY))
+
 
     -- Calculate the starting position in the spritesheet
     local startX = xIndex * width + 1  -- +1 because Lua arrays are 1-indexed
