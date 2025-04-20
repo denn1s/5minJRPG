@@ -82,7 +82,17 @@ function love.draw()
     love.graphics.setColor(1, 1, 1)
     if SceneManager.activeScene then
         love.graphics.print("Current Scene: " .. SceneManager.activeScene.name, 10, 10)
-        love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 20)
+        love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 22)
+
+        local playerEntities = ECS:getEntitiesWithComponent("player")
+        for _, entity in ipairs(playerEntities) do
+            local t = entity:getComponent("transform")
+
+            love.graphics.print(
+                "Player: " .. string.format("(%s, %s) [%s, %s]", math.floor(t.x), math.floor(t.y), t.gridX, t.gridY),
+                10, 34
+            )
+        end
     end
 end
 

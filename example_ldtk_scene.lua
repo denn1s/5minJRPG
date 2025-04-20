@@ -12,7 +12,7 @@ function ExampleLDtkScene.createLDtkScene(sceneManager, ecs)
   -- Create a scene
   local scene = sceneManager:createScene("ldtk_scene", 500, 12)
 
--- Initialize world from LDtk level
+  -- Initialize world from LDtk level
   sceneManager:initWorldFromLDtk(scene, "Level_1")
   -- Add setup systems in the correct order:
 
@@ -39,6 +39,9 @@ function ExampleLDtkScene.createLDtkScene(sceneManager, ecs)
   -- Make the camera follow the player
   scene:addSystem("update", Core.CameraSystem.new():init(ecs, scene.camera))
 
+  -- Sync the grid position of entities with their pixel position
+  scene:addSystem("update", Core.GridSyncSystem.new():init(ecs, scene.camera))
+
   -- Add render systems
   -- Add the LDtk tilemap render system (renders the current level)
   scene:addSystem("render", LDtk.TilemapRenderSystem.new():init(ecs, scene.levelId))
@@ -46,11 +49,9 @@ function ExampleLDtkScene.createLDtkScene(sceneManager, ecs)
   -- Use our dedicated SpriteRenderSystem from the systems index
   scene:addSystem("render", Core.SpriteRenderSystem.new():init(ecs))
 
-  --     -- Add collider rendering system for debugging
-  --     scene:addSystem("render", Core.ColliderRenderSystem.new():init(ecs))
+  -- Add collider rendering system for debugging
+  scene:addSystem("render", Core.ColliderRenderSystem.new():init(ecs))
 
-  --     -- Add debug system
-  --     scene:addSystem("render", Core.DebugSystem.new():init(ecs, sceneManager))
 
   --     -- Add event systems
   --     -- Handle key presses
