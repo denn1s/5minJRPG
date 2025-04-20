@@ -11,6 +11,7 @@ Core.TextureLoadSystem = require("ECS.core.texture_load_system")
 Core.TransitionSystem = require("ECS.core.transition_system")
 Core.PlayerAnimationSystem = require("ECS.core.player_animation_system")
 Core.ColliderRenderSystem = require("ECS.core.collider_render_system")
+Core.ColliderSystem = require("ECS.core.collider_system")
 Core.GridSyncSystem = require("ECS.core.grid_sync_system")
 
 -- Import LDtk modules

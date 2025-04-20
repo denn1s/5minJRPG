@@ -3,6 +3,7 @@
 
 local Systems = require("ECS.systems")
 local Components = require("ECS.components")
+local LDtkManager = require("ECS.ldtk.ldtk_manager")
 
 local ExampleSystems = {}
 
@@ -47,7 +48,7 @@ function ExampleSystems.CreatePlayerSystem:run()
     -- Add a smaller collider component with offset
     -- Width: 16px (same as sprite width)
     -- Height: if you want 8px at the bottom of the 16px sprite, it's 8px high with an 8px Y offset
-    player:addComponent(Components.collider(16, 8, 0, 8, true))  -- true enables debug rendering
+    player:addComponent(Components.collider(14, 8, 1, 7, true))  -- true enables debug rendering
 
     -- Add player-specific component with stats
     player:addComponent({
@@ -111,30 +112,74 @@ function ExampleSystems.InputSystem:run(dt)
     end
 end
 
--- Event System: Key Press Handling
-ExampleSystems.KeyPressSystem = setmetatable({}, {__index = Systems.EventSystem})
-ExampleSystems.KeyPressSystem.__index = ExampleSystems.KeyPressSystem
+-- Event System: intgrid rendering
+ExampleSystems.IntGridRenderSystem = setmetatable({}, {__index = Systems.RenderSystem})
+ExampleSystems.IntGridRenderSystem.__index = ExampleSystems.IntGridRenderSystem
 
-function ExampleSystems.KeyPressSystem.new()
-    local system = Systems.EventSystem.new()
-    setmetatable(system, ExampleSystems.KeyPressSystem)
+function ExampleSystems.IntGridRenderSystem.new()
+    local system = Systems.RenderSystem.new()
+    setmetatable(system, ExampleSystems.IntGridRenderSystem)
     return system
 end
 
-function ExampleSystems.KeyPressSystem:init(ecs)
-    Systems.EventSystem.init(self, ecs)
+function ExampleSystems.IntGridRenderSystem:init(ecs, currentLevel)
+    Systems.RenderSystem.init(self, ecs)
+    self.ldtk = LDtkManager.getInstance()
+    self.currentLevel = currentLevel
+    print("[IntGridRenderSystem] Initializing for level: " .. currentLevel)
     return self
 end
 
-function ExampleSystems.KeyPressSystem:run(event)
-    -- Only handle 'keypressed' events
-    if event.type ~= "keypressed" then
+function ExampleSystems.IntGridRenderSystem:run(renderer)
+    local level = self.ldtk:getLevel(self.currentLevel)
+    if not level then
+        print("[IntGridRenderSystem] ERROR: Level not found: " .. self.currentLevel)
         return
     end
 
-    -- Handle different key presses
-    if event.key == "escape" then
-        love.event.quit()
+    if not level.layerInstances then
+        print("[IntGridRenderSystem] No layers to render in level: " .. self.currentLevel)
+        return
+    end
+
+    local gridSize = self.ldtk:getGridSize()
+
+    -- Find the Collision intgrid layer
+    local collisionLayer = nil
+    for _, layer in ipairs(level.layerInstances) do
+        if layer.__type == "IntGrid" and layer.__identifier == "Collision" then
+            collisionLayer = layer
+            break
+        end
+    end
+
+    if not collisionLayer then
+        print("[IntGridRenderSystem] Collision layer not found in level: " .. self.currentLevel)
+        return
+    end
+
+    local width = collisionLayer.__cWid
+    local height = collisionLayer.__cHei
+    local intGridCsv = collisionLayer.intGridCsv
+
+    -- Iterate over each tile in the intgrid
+    for i = 1, #intGridCsv do
+        local value = intGridCsv[i]
+        if value == 1 then  -- WALKABLE tile
+            -- Calculate x, y position in pixels
+            local x = ((i - 1) % width) * gridSize
+            local y = math.floor((i - 1) / width) * gridSize
+
+            -- Draw rectangle at (x, y) with size gridSize x gridSize
+            renderer:draw_rectangle(
+                x,
+                y,
+                gridSize,
+                gridSize,
+                2,    -- Color index 2 (dark color)
+                false -- Not filled
+            )
+        end
     end
 end
 

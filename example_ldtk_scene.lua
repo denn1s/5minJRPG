@@ -30,6 +30,8 @@ function ExampleLDtkScene.createLDtkScene(sceneManager, ecs)
   -- Handle player input
   scene:addSystem("update", require("example_systems").InputSystem.new():init(ecs))
 
+  scene:addSystem("update", Core.ColliderSystem.new():init(ecs, scene.levelId))
+
   -- Handle player animations
   scene:addSystem("update", Core.PlayerAnimationSystem.new():init(ecs))
 
@@ -51,6 +53,8 @@ function ExampleLDtkScene.createLDtkScene(sceneManager, ecs)
 
   -- Add collider rendering system for debugging
   scene:addSystem("render", Core.ColliderRenderSystem.new():init(ecs))
+
+  scene:addSystem("render", require("example_systems").IntGridRenderSystem.new():init(ecs, scene.levelId))
 
 
   --     -- Add event systems
