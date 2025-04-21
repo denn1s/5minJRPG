@@ -4,7 +4,9 @@
 local Core = {}
 
 -- Import all system modules from this directory
-Core.CameraSystem = require("ECS.core.camera_system")
+local CameraSystems = require("ECS.core.camera_system")
+Core.CameraSetupSystem = CameraSystems.CameraSetupSystem
+Core.CameraUpdateSystem = CameraSystems.CameraUpdateSystem
 Core.SceneInitSystem = require("ECS.core.scene_init_system")
 Core.SpriteRenderSystem = require("ECS.core.sprite_render_system") 
 Core.TextureLoadSystem = require("ECS.core.texture_load_system")

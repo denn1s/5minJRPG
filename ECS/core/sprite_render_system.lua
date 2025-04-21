@@ -3,6 +3,7 @@
 
 local Systems = require("ECS.systems")
 local TextureManager = require("ECS.texture_manager")
+local Transition = require("ECS.transition")
 
 ---@class SpriteRenderSystem : RenderSystem
 ---@field ecs table ECS instance
@@ -130,7 +131,8 @@ function SpriteRenderSystem:drawSpritefromSheet(renderer, textureData, x, y, wid
                     local targetY = dy
 
                     -- Draw the pixel at the screen position
-                    love.graphics.setColor(renderer.COLORS[pixelColorIndex])
+                    local colorIndex = Transition:getColor(pixelColorIndex)
+                    love.graphics.setColor(renderer.COLORS[colorIndex])
                     love.graphics.points(math.floor(screenX + targetX), math.floor(screenY + targetY))
                 end
             end

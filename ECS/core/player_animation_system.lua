@@ -17,7 +17,6 @@ function PlayerAnimationSystem.new()
     setmetatable(system, PlayerAnimationSystem)
     system.animationTimer = 0
     system.frameDuration = 0.2 -- 5 frames per second animation speed
-    system.currentDirection = "down" -- Default direction
     return system
 end
 
@@ -54,38 +53,21 @@ function PlayerAnimationSystem:run(dt)
             if love.keyboard.isDown(keyMap.down) then
                 sprite.yIndex = 0 -- Down animation row
                 isMoving = true
-                self.currentDirection = "down"
             end
 
             if love.keyboard.isDown(keyMap.up) then
                 sprite.yIndex = 1 -- Up animation row
                 isMoving = true
-                self.currentDirection = "up"
             end
 
             if love.keyboard.isDown(keyMap.left) then
                 sprite.yIndex = 2 -- Left animation row
                 isMoving = true
-                self.currentDirection = "left"
             end
 
             if love.keyboard.isDown(keyMap.right) then
                 sprite.yIndex = 3 -- Right animation row
                 isMoving = true
-                self.currentDirection = "right"
-            end
-
-            -- If no keys are pressed, keep the yIndex for the last direction
-            if not isMoving then
-                if self.currentDirection == "down" then
-                    sprite.yIndex = 0
-                elseif self.currentDirection == "up" then
-                    sprite.yIndex = 1
-                elseif self.currentDirection == "left" then
-                    sprite.yIndex = 2
-                elseif self.currentDirection == "right" then
-                    sprite.yIndex = 3
-                end
             end
 
             -- Animate if moving, otherwise set to standing frame
@@ -96,13 +78,7 @@ function PlayerAnimationSystem:run(dt)
                     self.animationTimer = self.animationTimer % self.frameDuration
 
                     -- Update xIndex based on direction
-                    if self.currentDirection == "down" or self.currentDirection == "up" then
-                        -- For down/up: cycle between frames 1, 2
-                        sprite.xIndex = 1 + (sprite.xIndex % 2)
-                    else
-                        -- For left/right: cycle between frames 0, 1
-                        sprite.xIndex = (sprite.xIndex + 1) % 2
-                    end
+                    sprite.xIndex = 1 + (sprite.xIndex % 2)
                 end
             else
                 -- Set to standing frame (first frame in the row)

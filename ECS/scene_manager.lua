@@ -113,12 +113,6 @@ function SceneManager:initWorldFromLDtk(scene, levelId)
         end
     end
 
-    -- Now that we have a world, properly position the camera
-    -- Default to the center of the world if no specific position is set
-    local centerX = math.floor(world.pixelWidth / 2 - scene.camera.width / 2)
-    local centerY = math.floor(world.pixelHeight / 2 - scene.camera.height / 2)
-    scene.camera:setPosition(scene.camera.x or centerX, scene.camera.y or centerY)
-
     return world
 end
 
@@ -215,20 +209,18 @@ end
 
 -- Transition to a new scene with fade effect
 ---@param sceneName string
+---@param targetPlayerPosition? table -- a table with x and y position for the player
 ---@param preserveCurrentScene? boolean
 ---@param duration? number
 ---@return SceneManager
-function SceneManager:transitionToSceneWithFade(sceneName, preserveCurrentScene, duration, out)
+function SceneManager:transitionToSceneWithFade(sceneName, targetPlayerPosition, preserveCurrentScene, duration)
+    print("transitionToSceneWithFade", sceneName)
     if not self.scenes[sceneName] then
         error("Scene not registered: " .. sceneName)
     end
 
     -- Start a fade-out transition
-    if out then
-        Transition:start("fade_out", sceneName, preserveCurrentScene, duration)
-    else
-        Transition:start("fade_in", sceneName, preserveCurrentScene, duration)
-    end
+    Transition:start("fade_out", sceneName, preserveCurrentScene, duration, targetPlayerPosition)
 
     return self
 end
@@ -238,7 +230,6 @@ end
 ---@param preserveCurrentScene? boolean
 ---@return SceneManager
 function SceneManager:transitionToScene(sceneName, preserveCurrentScene)
-    print("transitionToScene", sceneName)
     if not self.scenes[sceneName] then
         error("Scene not registered: " .. sceneName)
     end
@@ -265,14 +256,6 @@ function SceneManager:transitionToScene(sceneName, preserveCurrentScene)
 
     -- Mark as initialized after running setup and restoring state
     self.activeScene.initialized = true
-
-    -- Make sure camera is within world bounds, if a world exists
-    if self.activeScene.world then
-        self.activeScene.camera:setPosition(
-            self.activeScene.camera.x,
-            self.activeScene.camera.y
-        )
-    end
 
     -- Call the onActivated callback if it exists
     if self.activeScene.onActivated then
@@ -383,8 +366,6 @@ end
 ---@return SceneManager
 function SceneManager:transitionToSceneByLevelId(
     levelId,
-    cameraX,
-    cameraY,
     playerX,
     playerY,
     preserveCurrentScene,
@@ -404,28 +385,12 @@ function SceneManager:transitionToSceneByLevelId(
         error("No scene found with levelId: " .. tostring(levelId))
     end
 
-    -- Set the camera position on the target scene
-    targetScene.camera:setPosition(cameraX, cameraY)
-
-    -- Set the player position in the ECS (assuming only one player)
-    local playerEntities = self.ecs:getEntitiesWithComponent("player")
-    if #playerEntities > 0 then
-        local player = playerEntities[1]
-        local transform = player:getComponent("transform")
-        if transform then
-            transform.x = playerX
-            transform.y = playerY
-        else
-            error("Player entity missing transform component")
-        end
-    else
-        error("No player entity found")
-    end
-
-    self:transitionToScene(targetScene.name, true)
-
     -- Perform the fade transition to the scene by name
-    return self:transitionToSceneWithFade(targetScene.name, preserveCurrentScene, duration)
+    local targetPlayerPosition = nil
+    if playerX ~= nil and playerY ~= nil then
+        targetPlayerPosition = { x = playerX, y = playerY}
+    end
+    return self:transitionToSceneWithFade(targetScene.name, targetPlayerPosition, preserveCurrentScene, duration)
 end
 
 return SceneManager

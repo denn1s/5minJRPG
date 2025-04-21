@@ -113,10 +113,6 @@ function DoorTransitionSystem:run(dt)
                 local targetPlayerX = toX * self.gridSize
                 local targetPlayerY = toY * self.gridSize
 
-                -- Calculate camera position centered on player
-                local cameraX = targetPlayerX - self.sceneManager.viewportWidth / 2
-                local cameraY = targetPlayerY - self.sceneManager.viewportHeight / 2
-
                 print(
                     string.format(
                         "[DoorTransitionSystem] Transitioning to %s at (%d, %d)",
@@ -128,12 +124,10 @@ function DoorTransitionSystem:run(dt)
 
                 self.sceneManager:transitionToSceneByLevelId(
                     toLevel,
-                    cameraX,
-                    cameraY,
                     targetPlayerX,
                     targetPlayerY,
                     false,
-                    1.0
+                    0.5
                 )
 
                 -- Only transition once per update

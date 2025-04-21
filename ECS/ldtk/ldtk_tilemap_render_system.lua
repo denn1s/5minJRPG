@@ -4,6 +4,7 @@
 local Systems = require("ECS.systems")
 local TextureManager = require("ECS.texture_manager")
 local LDtkManager = require("ECS.ldtk.ldtk_manager")
+local Transition = require("ECS.transition")
 
 ---@class LDtkTilemapRenderSystem : RenderSystem
 ---@field ecs table ECS instance
@@ -101,6 +102,7 @@ function LDtkTilemapRenderSystem:renderTile(renderer, textureData, px, py, gridS
                 local srcX = startX + dx
                 local colorIndex = textureData[srcY][srcX] or 0
                 if colorIndex > 0 then
+                    local colorIndex = Transition:getColor(colorIndex)
                     love.graphics.setColor(renderer.COLORS[colorIndex])
                     love.graphics.points(math.floor(screenX + dx), math.floor(screenY + dy))
                 end

@@ -100,9 +100,9 @@ function love.load()
     CreatePlayer()
 
     -- -- Start with the LDtk scene
-    SceneManager:transitionToSceneByLevelId("Level_1", 500, 500, 65 * 8, 4 * 8, true, 0.5)
+    -- SceneManager:transitionToSceneByLevelId("Level_1", 500, 500, 65 * 8, 4 * 8, true, 0.5)
     -- SceneManager:transitionToScene("Level_1_Scene")
-    Transition:start("fade_in", nil, false, TRANSITION_DURATION)
+    Transition:start("fade_in", "Level_1_Scene", false, TRANSITION_DURATION)
 
     print("[main] Game initialized with screen size: " .. SCREEN_WIDTH .. "x" .. SCREEN_HEIGHT .. "\n\n")
 end

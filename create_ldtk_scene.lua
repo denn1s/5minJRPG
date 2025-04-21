@@ -46,12 +46,13 @@ function LDtkScene:setupBasicSystems()
     scene:addSystem("setup", Core.SceneInitSystem.new():init(ecs, true, 0.5))
     scene:addSystem("setup", Core.TextureLoadSystem.new():init(ecs))
     scene:addSystem("setup", LDtk.TilesetPreloadSystem.new():init(ecs))
+    scene:addSystem("setup", Core.CameraSetupSystem.new():init(ecs, scene.camera))
 
     -- Core update systems
+    scene:addSystem("update", Core.CameraUpdateSystem.new():init(ecs, scene.camera))
     scene:addSystem("update", Core.ColliderSystem.new():init(ecs, levelId))
     scene:addSystem("update", Core.PlayerAnimationSystem.new():init(ecs))
     scene:addSystem("update", Core.MovementSystem.new():init(ecs))
-    scene:addSystem("update", Core.CameraSystem.new():init(ecs, scene.camera))
     scene:addSystem("update", Core.GridSyncSystem.new():init(ecs, scene.camera))
 
     -- Core render systems

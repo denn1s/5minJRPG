@@ -1,6 +1,8 @@
 -- ECS/transition.lua
 -- Scene transition system with fade effects
 
+local ECS = require("ECS.ecs")
+
 ---@class Transition
 ---@field active boolean Whether a transition is currently active
 ---@field type string The type of transition ("fade_out", "fade_in", "none")
@@ -28,10 +30,16 @@ local Transition = {
 ---@param targetScene string|nil
 ---@param preserveCurrentScene boolean
 ---@param duration number|nil
+---@param targetPlayerPosition? table|nil   -- a table with x, y target player position
 ---@return boolean
-function Transition:start(transitionType, targetScene, preserveCurrentScene, duration)
-    if self.active and transitionType ~= "fade_in" then
+function Transition:start(transitionType, targetScene, preserveCurrentScene, duration, targetPlayerPosition)
+    if self.active then
+        print("[Transition] A transition is already in progress (", transitionType, targetScene,")")
         return false
+    end
+    print("Starting transition", transitionType)
+    if targetScene ~= nil then
+        print("At end, we will load scene", targetScene)
     end
 
     self.active = true
@@ -40,6 +48,7 @@ function Transition:start(transitionType, targetScene, preserveCurrentScene, dur
     self.preserveCurrentScene = preserveCurrentScene or false
     self.duration = duration or self.duration  -- Use provided duration or default
     self.elapsed = 0
+    self.targetPlayerPosition = targetPlayerPosition
 
     -- Set initial fade level based on transition type
     if transitionType == "fade_out" then
@@ -90,13 +99,23 @@ function Transition:update(dt, sceneManager)
                 print("calling transition to scene")
                 sceneManager:transitionToScene(targetScene, preserveScene)
 
+                -- change player position if needed
+                if self.targetPlayerPosition ~= nil then
+                    local playerEntities = ECS:getEntitiesWithComponent("player")
+                    for _, entity in ipairs(playerEntities) do
+                        local t = entity:getComponent("transform")
+                        t.x = self.targetPlayerPosition.x
+                        t.y = self.targetPlayerPosition.y
+                    end
+                end
                 -- Set up the fade-in to start on next frame
                 -- This is to ensure the scene has fully loaded before we start fade-in
                 self.active = true
-                self.type = "none"  -- Temporary state
+                self.type = "fade_in"  -- Temporary state
                 self.targetScene = nil
                 self.waitForNextFrame = true
                 self.duration = duration
+                self.elapsed = 0
 
                 return true
             else
@@ -115,6 +134,13 @@ function Transition:update(dt, sceneManager)
         if progress >= 1 then
             self.active = false
             self.inputLocked = false
+            print("fade in complete")
+            if self.targetScene ~= nil then
+                print("transitioning to scene")
+                local targetScene = self.targetScene
+                local preserveScene = self.preserveCurrentScene
+                sceneManager:transitionToScene(targetScene, preserveScene)
+            end
             return false
         end
     end
