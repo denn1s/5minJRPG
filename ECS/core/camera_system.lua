@@ -3,7 +3,7 @@
 
 local Systems = require("ECS.systems")
 
-function followTarget(camera, ecs)
+function followTarget(camera, ecs, debug)
     local target = nil
     local playerEntities = ecs:getEntitiesWithComponent("player")
     if #playerEntities > 0 then
@@ -24,6 +24,9 @@ function followTarget(camera, ecs)
     local targetX = transform.x - (camera.width / 2) + 8   -- half sprite width
     local targetY = transform.y - (camera.height / 2) + 8
     -- Update camera position (will be clamped to world bounds by the camera)
+    if targetX ~= camera.x and targetY ~= camera.y then
+        print("Moving camera to", targetX, targetY)
+    end
     camera:setPosition(targetX, targetY)
 end
 
@@ -91,6 +94,7 @@ function CameraSetupSystem:init(ecs, camera, targetEntity)
 end
 
 function CameraSetupSystem:run()
+    print("Camera setup system running")
     followTarget(self.camera, self.ecs)
 end
 

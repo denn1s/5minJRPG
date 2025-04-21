@@ -51,8 +51,6 @@ function SceneManager:registerScene(scene)
     self.sceneStates[scene.name] = {
         entities = {},
         initialized = false,
-        cameraX = 0,
-        cameraY = 0
     }
 
     return self
@@ -138,12 +136,7 @@ function SceneManager:saveCurrentSceneState()
     if not self.activeScene then return end
 
     local sceneName = self.activeScene.name
-    ---@type SceneState
     local state = self.sceneStates[sceneName]
-
-    -- Store camera position
-    state.cameraX = self.activeScene.camera.x
-    state.cameraY = self.activeScene.camera.y
 
     -- Store all non-persistent entities
     state.entities = {}
@@ -180,9 +173,6 @@ function SceneManager:restoreSceneState(sceneName)
 
     -- Restore camera position
     local scene = self.scenes[sceneName]
-    if scene then
-        scene.camera:setPosition(state.cameraX, state.cameraY)
-    end
 
     -- Remove all non-persistent entities
     for _, entity in pairs(self.ecs.entities) do
@@ -212,7 +202,7 @@ end
 ---@param targetPlayerPosition? table -- a table with x and y position for the player
 ---@param preserveCurrentScene? boolean
 ---@param duration? number
----@return SceneManager
+---@return Scene
 function SceneManager:transitionToSceneWithFade(sceneName, targetPlayerPosition, preserveCurrentScene, duration)
     print("transitionToSceneWithFade", sceneName)
     if not self.scenes[sceneName] then
@@ -222,13 +212,13 @@ function SceneManager:transitionToSceneWithFade(sceneName, targetPlayerPosition,
     -- Start a fade-out transition
     Transition:start("fade_out", sceneName, preserveCurrentScene, duration, targetPlayerPosition)
 
-    return self
+    return self.scenes[sceneName]
 end
 
 -- Transition to a scene immediately (no fade)
 ---@param sceneName string
 ---@param preserveCurrentScene? boolean
----@return SceneManager
+---@return Scene
 function SceneManager:transitionToScene(sceneName, preserveCurrentScene)
     if not self.scenes[sceneName] then
         error("Scene not registered: " .. sceneName)
@@ -262,28 +252,28 @@ function SceneManager:transitionToScene(sceneName, preserveCurrentScene)
         self.activeScene:onActivated()
     end
 
-    return self
+    return self.activeScene
 end
 
 -- Return to the previous scene with fade effect
 ---@param duration? number
----@return SceneManager
+---@return Scene|nil
 function SceneManager:returnToPreviousSceneWithFade(duration)
     if not self.previousScene then
-        return self
+        return nil
     end
 
     -- Start a fade-out transition to the previous scene
     Transition:start("fade_out", self.previousScene.name, false, duration)
 
-    return self
+    return self.previousScene
 end
 
 -- Return to the previous scene immediately (no fade)
----@return SceneManager
+---@return Scene|nil
 function SceneManager:returnToPreviousScene()
     if not self.previousScene then
-        return self
+        return nil
     end
 
     -- Swap active and previous scenes
@@ -294,7 +284,7 @@ function SceneManager:returnToPreviousScene()
     -- Restore the scene state
     self:restoreSceneState(self.activeScene.name)
 
-    return self
+    return self.activeScene
 end
 
 -- Run setup systems for the active scene
@@ -357,13 +347,11 @@ end
 
 -- Transition to a scene by levelId, setting camera and player positions
 ---@param levelId string
----@param cameraX number
----@param cameraY number
 ---@param playerX number
 ---@param playerY number
 ---@param preserveCurrentScene? boolean
 ---@param duration? number
----@return SceneManager
+---@return Scene
 function SceneManager:transitionToSceneByLevelId(
     levelId,
     playerX,

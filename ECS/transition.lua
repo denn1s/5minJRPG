@@ -97,9 +97,7 @@ function Transition:update(dt, sceneManager)
 
                 -- Switch to the new scene
                 print("calling transition to scene")
-                sceneManager:transitionToScene(targetScene, preserveScene)
 
-                -- change player position if needed
                 if self.targetPlayerPosition ~= nil then
                     local playerEntities = ECS:getEntitiesWithComponent("player")
                     for _, entity in ipairs(playerEntities) do
@@ -108,6 +106,8 @@ function Transition:update(dt, sceneManager)
                         t.y = self.targetPlayerPosition.y
                     end
                 end
+
+                sceneManager:transitionToScene(targetScene, preserveScene)
                 -- Set up the fade-in to start on next frame
                 -- This is to ensure the scene has fully loaded before we start fade-in
                 self.active = true
