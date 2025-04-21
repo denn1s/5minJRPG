@@ -374,4 +374,57 @@ function SceneManager:handleEvent(event)
     end
 end
 
+-- Transition to a scene by levelId, setting camera and player positions
+---@param levelId string
+---@param cameraX number
+---@param cameraY number
+---@param playerX number
+---@param playerY number
+---@param preserveCurrentScene? boolean
+---@param duration? number
+---@return SceneManager
+function SceneManager:transitionToSceneByLevelId(
+    levelId,
+    cameraX,
+    cameraY,
+    playerX,
+    playerY,
+    preserveCurrentScene,
+    duration
+)
+    -- Find the scene with the matching levelId
+    local targetScene = nil
+    for _, scene in pairs(self.scenes) do
+        if scene.levelId == levelId then
+            targetScene = scene
+            break
+        end
+    end
+
+    if not targetScene then
+        error("No scene found with levelId: " .. tostring(levelId))
+    end
+
+    -- Set the camera position on the target scene
+    targetScene.camera:setPosition(cameraX, cameraY)
+
+    -- Set the player position in the ECS (assuming only one player)
+    local playerEntities = self.ecs:getEntitiesWithComponent("player")
+    if #playerEntities > 0 then
+        local player = playerEntities[1]
+        local transform = player:getComponent("transform")
+        if transform then
+            transform.x = playerX
+            transform.y = playerY
+        else
+            error("Player entity missing transform component")
+        end
+    else
+        error("No player entity found")
+    end
+
+    -- Perform the fade transition to the scene by name
+    return self:transitionToSceneWithFade(targetScene.name, preserveCurrentScene, duration)
+end
+
 return SceneManager

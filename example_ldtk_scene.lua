@@ -30,13 +30,15 @@ function ExampleLDtkScene.createLDtkScene(sceneManager, ecs)
   -- Handle player input
   scene:addSystem("update", require("example_systems").InputSystem.new():init(ecs))
 
+  scene:addSystem("update", require("example_systems").LevelTransitionInputSystem.new():init(ecs, sceneManager))
+
   scene:addSystem("update", Core.ColliderSystem.new():init(ecs, scene.levelId))
 
   -- Handle player animations
   scene:addSystem("update", Core.PlayerAnimationSystem.new():init(ecs))
 
   -- Update position and handle collisions
-  scene:addSystem("update", require("ECS.core.movement_system").new():init(ecs))
+  scene:addSystem("update", Core.MovementSystem.new():init(ecs))
 
   -- Make the camera follow the player
   scene:addSystem("update", Core.CameraSystem.new():init(ecs, scene.camera))
@@ -55,6 +57,7 @@ function ExampleLDtkScene.createLDtkScene(sceneManager, ecs)
   scene:addSystem("render", Core.ColliderRenderSystem.new():init(ecs))
 
   scene:addSystem("render", require("example_systems").IntGridRenderSystem.new():init(ecs, scene.levelId))
+  scene:addSystem("render", require("example_systems").DoorRenderSystem.new():init(ecs, scene.levelId))
 
 
   --     -- Add event systems
