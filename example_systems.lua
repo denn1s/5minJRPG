@@ -23,50 +23,6 @@ function ExampleSystems.CreatePlayerSystem:init(ecs)
     return self
 end
 
-
-function ExampleSystems.CreatePlayerSystem:run()
-    -- Path to the player spritesheet
-    local heroSpritesheetPath = "assets/spritesheets/hero.png"
-
-    -- Create player entity
-    local player = self.ecs:createEntity()
-
-    -- Add a texture component for loading the spritesheet
-    player:addComponent(Components.texture(heroSpritesheetPath))
-
-    -- Add a sprite component for rendering
-    player:addComponent(Components.sprite(heroSpritesheetPath, 16, 16, 0, 0))
-
-    -- Add transform component for position
-    player:addComponent(Components.transform(65, 4))
-
-    -- Add velocity component for movement
-    player:addComponent(Components.velocity(0, 0))
-
-    -- Add input component for player control
-    player:addComponent(Components.input())
-
-    -- Add a smaller collider component with offset
-    -- Width: 16px (same as sprite width)
-    -- Height: if you want 8px at the bottom of the 16px sprite, it's 8px high with an 8px Y offset
-    player:addComponent(Components.collider(14, 8, 1, 7, true))  -- true enables debug rendering
-
-    -- Add player-specific component with stats
-    player:addComponent({
-        name = "player",
-        health = 100,
-        maxHealth = 100,
-        experience = 0,
-        level = 1
-    })
-
-    -- Mark player as persistent across scenes
-    local SceneManager = require("ECS.scene_manager")
-    SceneManager:markEntityAsPersistent(player)
-
-    return player
-end
-
 -- Update System: Process Input
 ExampleSystems.InputSystem = setmetatable({}, {__index = Systems.UpdateSystem})
 ExampleSystems.InputSystem.__index = ExampleSystems.InputSystem
@@ -265,8 +221,8 @@ function ExampleSystems.LevelTransitionInputSystem:run(dt)
 
     if love.keyboard.isDown("1") then
         -- Level_0, player at grid (5,5)
-        local playerX = 5 * gridSize
-        local playerY = 5 * gridSize
+        local playerX = (5 + 1) * gridSize
+        local playerY = (5 + 1) * gridSize
         local cameraX = playerX - self.sceneManager.viewportWidth / 2
         local cameraY = playerY - self.sceneManager.viewportHeight / 2
 
@@ -280,14 +236,13 @@ function ExampleSystems.LevelTransitionInputSystem:run(dt)
             1.0    -- transition duration in seconds
         )
     elseif love.keyboard.isDown("2") then
-        -- Level_2, no player position specified, default to (0,0)
-        local playerX = 0
-        local playerY = 0
+        local playerX = (33 + 1) * gridSize
+        local playerY = (2 + 1) * gridSize
         local cameraX = playerX - self.sceneManager.viewportWidth / 2
         local cameraY = playerY - self.sceneManager.viewportHeight / 2
 
         self.sceneManager:transitionToSceneByLevelId(
-            "Level_2",
+            "Level_1",
             cameraX,
             cameraY,
             playerX,
@@ -297,13 +252,13 @@ function ExampleSystems.LevelTransitionInputSystem:run(dt)
         )
     elseif love.keyboard.isDown("3") then
         -- Level_3, player at grid (2,1)
-        local playerX = 2 * gridSize
-        local playerY = 1 * gridSize
+        local playerX = (2 + 1) * gridSize
+        local playerY = (1 + 1) * gridSize
         local cameraX = playerX - self.sceneManager.viewportWidth / 2
         local cameraY = playerY - self.sceneManager.viewportHeight / 2
 
         self.sceneManager:transitionToSceneByLevelId(
-            "Level_3",
+            "Level_2",
             cameraX,
             cameraY,
             playerX,

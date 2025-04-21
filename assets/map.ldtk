@@ -3958,7 +3958,7 @@
 									"params": ["Level_0"]
 								}] },
 								{ "__identifier": "x", "__type": "Int", "__value": 9, "__tile": null, "defUid": 22, "realEditorValues": [{ "id": "V_Int", "params": [9] }] },
-								{ "__identifier": "y", "__type": "Int", "__value": 25, "__tile": null, "defUid": 23, "realEditorValues": [{ "id": "V_Int", "params": [25] }] }
+								{ "__identifier": "y", "__type": "Int", "__value": 24, "__tile": null, "defUid": 23, "realEditorValues": [{ "id": "V_Int", "params": [24] }] }
 							],
 							"__worldX": -672,
 							"__worldY": -376

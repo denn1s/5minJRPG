@@ -1,26 +1,28 @@
 -- ECS/camera.lua
 -- Camera system for the ECS
-local StaticWorldManager = require("ECS.world_manager")
 
 ---@class Camera
 ---@field x number X position in world coordinates (top-left corner of viewport)
 ---@field y number Y position in world coordinates (top-left corner of viewport)
 ---@field width number Width of the viewport
 ---@field height number Height of the viewport
+---@field scene Scene scene thiscamera is part of
 local Camera = {}
 Camera.__index = Camera
 
+---@param scene Scene the scene this camera points to
 ---@param width number Width of the viewport (usually SCREEN_WIDTH)
 ---@param height number Height of the viewport (usually SCREEN_HEIGHT)
 ---@param x? number Initial X position (defaults to 0)
 ---@param y? number Initial Y position (defaults to 0)
 ---@return Camera
-function Camera.new(width, height, x, y)
+function Camera.new(scene, width, height, x, y)
     local camera = {
         x = x or 0,
         y = y or 0,
         width = width,
-        height = height
+        height = height,
+        scene = scene
     }
     setmetatable(camera, Camera)
     return camera
@@ -42,9 +44,7 @@ end
 ---@return number
 function Camera:clampX(x)
     if x < 0 then return 0 end
-
-    local WorldManager = StaticWorldManager.getInstance()
-    local world = WorldManager:getActiveWorld()
+    local world = self.scene.world
 
     if not world then
         return x
@@ -61,8 +61,7 @@ end
 ---@return number
 function Camera:clampY(y)
     if y < 0 then return 0 end
-    local WorldManager = StaticWorldManager.getInstance()
-    local world = WorldManager:getActiveWorld()
+    local world = self.scene.world
 
     if not world then
         return y

@@ -2,11 +2,10 @@
 -- Scene management system for the ECS
 
 local Transition = require("ECS.transition")
-local Camera = require("ECS.camera")
 local World = require("ECS.world")
 local LDtkManager = require("ECS.ldtk.ldtk_manager")
-local WorldManager = require("ECS.world_manager")
 local Scene = require("ECS.scene")
+local Camera = require("ECS.camera")
 
 ---@class SceneManager
 ---@field scenes table<string, Scene> All registered scenes
@@ -61,13 +60,12 @@ end
 
 -- Create a new scene and register it
 ---@param name string
----@param viewportWidth number
----@param viewportHeight number
 ---@param cameraX? number Initial camera X position
 ---@param cameraY? number Initial camera Y position
 ---@return Scene
 function SceneManager:createScene(name, cameraX, cameraY)
-    local scene = Scene.new(name, self.viewportWidth, self.viewportHeight, cameraX, cameraY)
+    local scene = Scene.new(name)
+    scene.camera = Camera.new(scene, self.viewportWidth, self.viewportHeight, cameraX, cameraY)
     self:registerScene(scene)
     return scene
 end
@@ -79,9 +77,6 @@ end
 function SceneManager:initWorldFromLDtk(scene, levelId)
     -- Get the LDtk manager instance
     local ldtk = LDtkManager.getInstance()
-
-    -- Get the world manager instance
-    local worldManager = WorldManager.getInstance()
 
     -- Get the level data for the specified level ID
     local level = ldtk:getLevel(levelId)
@@ -101,10 +96,8 @@ function SceneManager:initWorldFromLDtk(scene, levelId)
     end
 
     -- Create a new world for this level
-    local world = worldManager:createWorld(levelId, gridWidth, gridHeight, gridSize)
-
-    -- Set as active world
-    worldManager:setActiveWorld(world)
+    print("Creating world of size ", gridWidth, gridHeight, gridSize)
+    local world = World.new(gridWidth, gridHeight, gridSize)
 
     -- Store level ID in world properties
     world:setProperty("levelId", levelId)
@@ -225,13 +218,17 @@ end
 ---@param preserveCurrentScene? boolean
 ---@param duration? number
 ---@return SceneManager
-function SceneManager:transitionToSceneWithFade(sceneName, preserveCurrentScene, duration)
+function SceneManager:transitionToSceneWithFade(sceneName, preserveCurrentScene, duration, out)
     if not self.scenes[sceneName] then
         error("Scene not registered: " .. sceneName)
     end
 
     -- Start a fade-out transition
-    Transition:start("fade_out", sceneName, preserveCurrentScene, duration)
+    if out then
+        Transition:start("fade_out", sceneName, preserveCurrentScene, duration)
+    else
+        Transition:start("fade_in", sceneName, preserveCurrentScene, duration)
+    end
 
     return self
 end
@@ -241,6 +238,7 @@ end
 ---@param preserveCurrentScene? boolean
 ---@return SceneManager
 function SceneManager:transitionToScene(sceneName, preserveCurrentScene)
+    print("transitionToScene", sceneName)
     if not self.scenes[sceneName] then
         error("Scene not registered: " .. sceneName)
     end
@@ -392,6 +390,7 @@ function SceneManager:transitionToSceneByLevelId(
     preserveCurrentScene,
     duration
 )
+    print("transitioN to scene by level id", levelId)
     -- Find the scene with the matching levelId
     local targetScene = nil
     for _, scene in pairs(self.scenes) do
@@ -422,6 +421,8 @@ function SceneManager:transitionToSceneByLevelId(
     else
         error("No player entity found")
     end
+
+    self:transitionToScene(targetScene.name, true)
 
     -- Perform the fade transition to the scene by name
     return self:transitionToSceneWithFade(targetScene.name, preserveCurrentScene, duration)

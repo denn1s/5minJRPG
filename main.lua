@@ -4,6 +4,7 @@
 -- Import required modules
 local ECS = require("ECS.ecs")
 local Renderer = require("ECS.renderer")
+local Components = require("ECS.components")
 local SceneManager = require("ECS.scene_manager")
 local ExampleLDtkScene = require("example_ldtk_scene")
 local TextureManager = require("ECS.texture_manager")
@@ -19,6 +20,51 @@ local TRANSITION_DURATION = 0.5
 
 -- Game variables
 local renderer
+
+
+function CreatePlayer()
+    -- Path to the player spritesheet
+    local heroSpritesheetPath = "assets/spritesheets/hero.png"
+
+    -- Create player entity
+    local player = ECS:createEntity()
+
+    -- Add a texture component for loading the spritesheet
+    player:addComponent(Components.texture(heroSpritesheetPath))
+
+    -- Add a sprite component for rendering
+    player:addComponent(Components.sprite(heroSpritesheetPath, 16, 16, 0, 0))
+
+    -- Add transform component for position
+    -- This is the initial player position in the initial scene, must be a walkable
+    player:addComponent(Components.transform(65 * 8, 4 * 8))
+
+    -- Add velocity component for movement
+    player:addComponent(Components.velocity(0, 0))
+
+    -- Add input component for player control
+    player:addComponent(Components.input())
+
+    -- Add a smaller collider component with offset
+    -- Width: 16px (same as sprite width)
+    -- Height: if you want 8px at the bottom of the 16px sprite, it's 8px high with an 8px Y offset
+    player:addComponent(Components.collider(14, 8, 1, 7, true))  -- true enables debug rendering
+
+    -- Add player-specific component with stats
+    player:addComponent({
+        name = "player",
+        health = 100,
+        maxHealth = 100,
+        experience = 0,
+        level = 1
+    })
+
+    -- Mark player as persistent across scenes
+    local SceneManager = require("ECS.scene_manager")
+    SceneManager:markEntityAsPersistent(player)
+
+    return player
+end
 
 function love.load()
     -- Set up the window
@@ -43,13 +89,19 @@ function love.load()
     ldtk:load()
 
     -- -- Create our LDtk scene
-    ExampleLDtkScene.createLDtkScene(SceneManager, ECS)
+    ExampleLDtkScene.createLevel0(SceneManager, ECS)
+    ExampleLDtkScene.createLevel1(SceneManager, ECS)
+    ExampleLDtkScene.createLevel2(SceneManager, ECS)
 
     -- -- Set default transition duration
     Transition.duration = TRANSITION_DURATION
 
+    -- Create player outside of any scene
+    CreatePlayer()
+
     -- -- Start with the LDtk scene
-    SceneManager:transitionToScene("ldtk_scene")
+    SceneManager:transitionToSceneByLevelId("Level_1", 500, 500, 65 * 8, 4 * 8, true, 0.5)
+    -- SceneManager:transitionToScene("Level_1_Scene")
     Transition:start("fade_in", nil, false, TRANSITION_DURATION)
 
     print("[main] Game initialized with screen size: " .. SCREEN_WIDTH .. "x" .. SCREEN_HEIGHT .. "\n\n")
@@ -81,8 +133,16 @@ function love.draw()
     -- Debug info
     love.graphics.setColor(1, 1, 1)
     if SceneManager.activeScene then
+        local world = SceneManager.activeScene.world
+
         love.graphics.print("Current Scene: " .. SceneManager.activeScene.name, 10, 10)
-        love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 22)
+        if world then
+            love.graphics.print("Current World: " .. string.format(
+                "/grid %s/gw %s/gh %s/pxw %s/pxh %s",
+                world.gridSize, world.gridWidth, world.gridHeight, world.pixelWidth, world.pixelHeight
+            ), 10, 22)
+        end
+        love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 34)
 
         local playerEntities = ECS:getEntitiesWithComponent("player")
         for _, entity in ipairs(playerEntities) do
@@ -90,7 +150,7 @@ function love.draw()
 
             love.graphics.print(
                 "Player: " .. string.format("(%s, %s) [%s, %s]", math.floor(t.x), math.floor(t.y), t.gridX, t.gridY),
-                10, 34
+                10, 46
             )
         end
     end

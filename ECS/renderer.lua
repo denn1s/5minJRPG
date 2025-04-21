@@ -49,8 +49,8 @@ function Renderer:begin()
 
     -- Clear with the lightest color (Gameboy "white")
     -- Use the fade-adjusted color for the background
-    local adjustedColorIndex = Transition:getAdjustedColorIndex(1)
-    love.graphics.setColor(self.COLORS[adjustedColorIndex])
+    local colorIndex = Transition:getColor(1)
+    love.graphics.setColor(self.COLORS[colorIndex])
     love.graphics.rectangle("fill", 0, 0, self.width, self.height)
 
     -- Clear the text canvas with transparent background
@@ -109,8 +109,8 @@ function Renderer:draw_rectangle(x, y, width, height, colorIndex, filled)
     local screenX, screenY = self:worldToScreen(x, y)
 
     -- Apply the fade effect to the color index
-    local adjustedColorIndex = Transition:getAdjustedColorIndex(colorIndex or 1)
-    love.graphics.setColor(self.COLORS[adjustedColorIndex])
+    local colorIndex = Transition:getColor(colorIndex or 1)
+    love.graphics.setColor(self.COLORS[colorIndex])
 
     -- Use math.floor to ensure we're drawing at exact pixel positions
     local drawMode = filled and "fill" or "line"
@@ -123,8 +123,8 @@ function Renderer:draw_sprite(sprite, x, y, colorIndex)
     local screenX, screenY = self:worldToScreen(x, y)
 
     -- Apply the fade effect to the color index
-    local adjustedColorIndex = Transition:getAdjustedColorIndex(colorIndex or 1)
-    love.graphics.setColor(self.COLORS[adjustedColorIndex])
+    local colorIndex = Transition:getColor(colorIndex or 1)
+    love.graphics.setColor(self.COLORS[colorIndex])
 
     -- Draw sprite (if it's an array of 0s and 1s)
     if type(sprite) == "table" then
@@ -164,14 +164,14 @@ function Renderer:draw_text(text, x, y, textColorIndex, shadowColorIndex)
     local ty = screenY / self.fontScale
 
     -- Apply the fade effect to the text color index
-    local adjustedTextColorIndex = Transition:getAdjustedColorIndex(textColorIndex or 1)
+    local adjustedTextColorIndex = Transition:getColor(textColorIndex or 1)
 
     -- Set our pixel font
     love.graphics.setFont(self.pixelFont)
 
     -- Draw shadow if shadowColorIndex is provided
     if shadowColorIndex then
-        local adjustedShadowColorIndex = Transition:getAdjustedColorIndex(shadowColorIndex)
+        local adjustedShadowColorIndex = Transition:getColor(shadowColorIndex)
         love.graphics.setColor(self.COLORS[adjustedShadowColorIndex])
         love.graphics.print(text, math.floor(tx) + 1, math.floor(ty) + 1)
     end

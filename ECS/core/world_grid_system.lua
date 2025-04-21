@@ -1,5 +1,6 @@
 -- ECS/core/grid_sync_system.lua
 local Systems = require("ECS.systems")
+local SceneManager = require("ECS.scene_manager")
 
 ---@class GridSyncSystem : UpdateSystem
 ---@field ecs table ECS instance
@@ -22,8 +23,7 @@ end
 
 ---@param dt number Delta time (unused in this system)
 function GridSyncSystem:run(_)
-  local WorldManager = require("ECS.world_manager").getInstance()
-  local world = WorldManager:getActiveWorld()
+  local world = SceneManager.activeScene.world
 
   if not world then return end
 
@@ -35,7 +35,7 @@ function GridSyncSystem:run(_)
 
     -- Update grid coordinates based on pixel position
     -- This allows for smooth pixel movement while maintaining grid awareness
-    transform.gridX, transform.gridY = WorldManager:pixelToGrid(transform.x, transform.y)
+    transform.gridX, transform.gridY = world:pixelToGrid(transform.x, transform.y)
   end
 end
 

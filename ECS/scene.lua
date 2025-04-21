@@ -1,8 +1,6 @@
 -- ECS/scene.lua
 -- Scene for the ECS
 
-local Camera = require("ECS.camera")
-
 ---@class Scene
 ---@field name string Name of the scene
 ---@field systems table<string, table> Systems in this scene organized by type
@@ -16,12 +14,8 @@ local Scene = {}
 Scene.__index = Scene
 
 ---@param name string Name of the scene
----@param viewportWidth number Width of the viewport
----@param viewportHeight number Height of the viewport
----@param cameraX? number Initial camera X position (optional, defaults to 0)
----@param cameraY? number Initial camera Y position (optional, defaults to 0)
 ---@return Scene
-function Scene.new(name, viewportWidth, viewportHeight, cameraX, cameraY)
+function Scene.new(name)
     local scene = {
         name = name,
         systems = {
@@ -32,8 +26,8 @@ function Scene.new(name, viewportWidth, viewportHeight, cameraX, cameraY)
         },
         initialized = false,
         world = nil,  -- Will be set by initWorld
-        camera = Camera.new(viewportWidth, viewportHeight, cameraX or 0, cameraY or 0),
-        levelId = nil  -- Will be set when a level is loaded
+        camera = nil,  -- Will be set by initCamera
+        levelId = nil,  -- Will be set when a level is loaded
     }
     setmetatable(scene, Scene)
     return scene

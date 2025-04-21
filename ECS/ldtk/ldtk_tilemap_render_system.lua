@@ -41,7 +41,8 @@ function LDtkTilemapRenderSystem:run(renderer)
         return
     end
 
-    for _, layer in ipairs(level.layerInstances) do
+    for i = #level.layerInstances, 1, -1 do
+        local layer = level.layerInstances[i]
         if layer.__type == "Tiles" and layer.gridTiles and #layer.gridTiles > 0 then
             self:renderLayer(renderer, layer)
         end

@@ -11,28 +11,16 @@ local Components = {}
 ---@field y number Pixel Y-coordinate
 
 -- Transform component (position, rotation, scale)
----@param gridX? number Position in the grid
----@param gridY? number Position in the grid
+---@param x? number Position in pixels
+---@param y? number Position in pixels
 ---@return TransformComponent
-function Components.transform(gridX, gridY)
-    local WorldManager = require("ECS.world_manager").getInstance()
-    local world = WorldManager:getActiveWorld()
-
-    gridX = gridX or 0
-    gridY = gridY or 0
-
-    -- Calculate pixel position from grid position using WorldManager
-    local pixelX, pixelY = 0, 0
-    if world then
-        pixelX, pixelY = WorldManager:gridToPixel(gridX, gridY)
-    end
-
+function Components.transform(x, y)
     return {
         name = "transform",
-        gridX = gridX,
-        gridY = gridY,
-        x = pixelX,
-        y = pixelY
+        gridX = 0,
+        gridY = 0,
+        x = x,
+        y = y
     }
 end
 

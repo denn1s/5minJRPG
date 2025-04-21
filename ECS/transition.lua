@@ -72,7 +72,6 @@ function Transition:update(dt, sceneManager)
 
     -- Calculate progress from 0 to 1
     local progress = math.min(1, self.elapsed / self.duration)
-
     if self.type == "fade_out" then
         -- For fade out: 4 -> 1 (lightest to darkest)
         -- We want to step through 4 levels, so we divide the progress into 3 sections
@@ -88,6 +87,7 @@ function Transition:update(dt, sceneManager)
                 local duration = self.duration
 
                 -- Switch to the new scene
+                print("calling transition to scene")
                 sceneManager:transitionToScene(targetScene, preserveScene)
 
                 -- Set up the fade-in to start on next frame
@@ -126,7 +126,7 @@ end
 -- This is how much to subtract from a normal color index to get the faded color
 ---@param originalIndex number The original color index (1-4)
 ---@return number The adjusted color index (1-4)
-function Transition:getAdjustedColorIndex(originalIndex)
+function Transition:getColor(originalIndex)
     if not self.active then return originalIndex end
 
     -- In GameBoy style, we want to shift everything toward the darker end (lower indices)

@@ -1,5 +1,5 @@
 -- ECS/world.lua
--- World data storage class for the ECS
+-- World data storage and management class for the ECS
 
 ---@class World
 ---@field gridWidth number Width of the world in grid cells
@@ -60,4 +60,49 @@ function World:setSize(gridWidth, gridHeight)
     return self
 end
 
+-- Convert grid coordinates to world pixel coordinates
+---@param gridX number
+---@param gridY number
+---@return number, number
+function World:gridToPixel(gridX, gridY)
+    return gridX * self.gridSize, gridY * self.gridSize
+end
+
+-- Convert world pixel coordinates to grid coordinates
+---@param pixelX number
+---@param pixelY number
+---@return number, number
+function World:pixelToGrid(pixelX, pixelY)
+    return math.floor(pixelX / self.gridSize), math.floor(pixelY / self.gridSize)
+end
+
+-- Check if a grid position is within world bounds
+---@param gridX number
+---@param gridY number
+---@return boolean
+function World:isGridPositionInBounds(gridX, gridY)
+    return gridX >= 0 and gridX < self.gridWidth and
+           gridY >= 0 and gridY < self.gridHeight
+end
+
+-- Check if a pixel position is within world bounds
+---@param pixelX number
+---@param pixelY number
+---@return boolean
+function World:isPixelPositionInBounds(pixelX, pixelY)
+    return pixelX >= 0 and pixelX < self.pixelWidth and
+           pixelY >= 0 and pixelY < self.pixelHeight
+end
+
+-- Update the world's grid size
+---@param gridSize number
+---@return World
+function World:setGridSize(gridSize)
+    self.gridSize = gridSize
+    self.pixelWidth = self.gridWidth * gridSize
+    self.pixelHeight = self.gridHeight * gridSize
+    return self
+end
+
 return World
+

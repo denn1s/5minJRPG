@@ -1,71 +1,48 @@
 -- example_ldtk_scene.lua
--- Example scene using LDtk map system
-
-local Core = require("ECS.core")
-local LDtk = require("ECS.ldtk")
-local dump = require("libs.dump")
+local LDtkScene = require("create_ldtk_scene")
+local ExampleSystems = require("example_systems")
+local DoorTransitionSystem = require("door_transition_system")
 
 local ExampleLDtkScene = {}
 
--- Create an LDtk scene
-function ExampleLDtkScene.createLDtkScene(sceneManager, ecs)
-  -- Create a scene
-  local scene = sceneManager:createScene("ldtk_scene", 500, 12)
+-- Helper to add example systems to a scene
+local function addExampleSystems(scene, ecs, sceneManager, levelId)
+    -- Create player entity
+    -- scene:addSystem("setup", ExampleSystems.CreatePlayerSystem.new():init(ecs))
 
-  -- Initialize world from LDtk level
-  sceneManager:initWorldFromLDtk(scene, "Level_1")
-  -- Add setup systems in the correct order:
+    -- Input system for player control
+    scene:addSystem("update", ExampleSystems.InputSystem.new():init(ecs))
 
-  -- Initialize the scene with a fade-in effect
-  scene:addSystem("setup", Core.SceneInitSystem.new():init(ecs, true, 0.5))
+    -- Transition to doors
+    scene:addSystem("update", DoorTransitionSystem.new(sceneManager):init(ecs, levelId))
 
-  -- Create the player entity (same as in example scenes)
-  scene:addSystem("setup", require("example_systems").CreatePlayerSystem.new():init(ecs))
+    -- Level transition input system (handle keys 1,2,3)
+    scene:addSystem("update", ExampleSystems.LevelTransitionInputSystem.new():init(ecs, sceneManager))
 
-  -- Load all textures for entities in the scene
-  scene:addSystem("setup", Core.TextureLoadSystem.new():init(ecs))
-  scene:addSystem("setup", LDtk.TilesetPreloadSystem.new():init(ecs))
+    -- scene:addSystem("render", ExampleSystems.IntGridRenderSystem.new():init(ecs, levelId))
+    -- scene:addSystem("render", ExampleSystems.DoorRenderSystem.new():init(ecs, levelId))
+end
 
-  -- Add update systems
-  -- Handle player input
-  scene:addSystem("update", require("example_systems").InputSystem.new():init(ecs))
+-- Create Level_0 scene
+function ExampleLDtkScene.createLevel0(sceneManager, ecs)
+    local ldtkScene = LDtkScene.new(sceneManager, ecs, "Level_0_Scene", 0, 0, "Level_0")
+    addExampleSystems(ldtkScene.scene, ecs, sceneManager, "Level_0")
+    return ldtkScene.scene
+end
 
-  scene:addSystem("update", require("example_systems").LevelTransitionInputSystem.new():init(ecs, sceneManager))
+-- Create Level_1 scene
+function ExampleLDtkScene.createLevel1(sceneManager, ecs)
+    local ldtkScene = LDtkScene.new(sceneManager, ecs, "Level_1_Scene", 0, 0, "Level_1")
+    addExampleSystems(ldtkScene.scene, ecs, sceneManager, "Level_1")
+    return ldtkScene.scene
+end
 
-  scene:addSystem("update", Core.ColliderSystem.new():init(ecs, scene.levelId))
-
-  -- Handle player animations
-  scene:addSystem("update", Core.PlayerAnimationSystem.new():init(ecs))
-
-  -- Update position and handle collisions
-  scene:addSystem("update", Core.MovementSystem.new():init(ecs))
-
-  -- Make the camera follow the player
-  scene:addSystem("update", Core.CameraSystem.new():init(ecs, scene.camera))
-
-  -- Sync the grid position of entities with their pixel position
-  scene:addSystem("update", Core.GridSyncSystem.new():init(ecs, scene.camera))
-
-  -- Add render systems
-  -- Add the LDtk tilemap render system (renders the current level)
-  scene:addSystem("render", LDtk.TilemapRenderSystem.new():init(ecs, scene.levelId))
-
-  -- Use our dedicated SpriteRenderSystem from the systems index
-  scene:addSystem("render", Core.SpriteRenderSystem.new():init(ecs))
-
-  -- Add collider rendering system for debugging
-  scene:addSystem("render", Core.ColliderRenderSystem.new():init(ecs))
-
-  scene:addSystem("render", require("example_systems").IntGridRenderSystem.new():init(ecs, scene.levelId))
-  scene:addSystem("render", require("example_systems").DoorRenderSystem.new():init(ecs, scene.levelId))
-
-
-  --     -- Add event systems
-  --     -- Handle key presses
-  --     scene:addSystem("event", require("example_systems").KeyPressSystem.new():init(ecs))
-  --     print("Created LDtk scene")
-
-  return scene
+-- Create Level_2 scene
+function ExampleLDtkScene.createLevel2(sceneManager, ecs)
+    local ldtkScene = LDtkScene.new(sceneManager, ecs, "Level_2_Scene", 0, 0, "Level_2")
+    addExampleSystems(ldtkScene.scene, ecs, sceneManager, "Level_2")
+    return ldtkScene.scene
 end
 
 return ExampleLDtkScene
+
